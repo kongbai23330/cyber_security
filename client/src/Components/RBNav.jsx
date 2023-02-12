@@ -14,7 +14,7 @@ export default class RBNav extends React.Component {
       <Navbar bg="light" expand="lg">
         <Container>
           <Navbar.Brand>
-            <img src="../../public/favicon.ico" />
+            HeapOverflow
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
