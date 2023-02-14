@@ -7,3 +7,36 @@
 #root {
   font-family: "JetBrainsMono-Medium";
 }
+
+.nav:hover {
+  box-shadow: 0px 10px 5px -5px rgba(0,0,0,0.2);
+}
+
+.main-panel {
+  width: 95%;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  margin-top: 15px;
+}
+
+.main-panel:hover {
+  box-shadow: 0px 10px 5px -5px rgba(0,0,0,0.2);
+}
+
+.portrait-panel {
+  margin-bottom: 15px;
+}
+
+.portrait-panel:hover {
+  box-shadow: 0px 10px 5px -5px rgba(0,0,0,0.2);
+}
+
+.portrait-header {
+  font-size: smaller;
+}
+
+.portrait-body {
+  font-size: x-small;
+  /* padding: 0; */
+}
