@@ -11,5 +11,8 @@
     "build": "cd client && npm run build"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "highlight.js": "^11.7.0"
+  }
 }

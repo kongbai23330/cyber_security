@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import { Card, Button, Row, Col, Image, ButtonGroup } from "react-bootstrap";
-import Figure from 'react-bootstrap/Figure';
+import { Card, Button, Row, Col, Figure, ButtonGroup } from "react-bootstrap";
 import Sample from '../Public/sample.jpg';
 
 export default class Profile extends React.Component {
@@ -28,7 +27,7 @@ export default class Profile extends React.Component {
 
   render() {
     return (
-      <div id="main-panel">
+      <div className="main-panel">
       <Card>
         <Card.Header>Profile</Card.Header>
         <Card.Body>

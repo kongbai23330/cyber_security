@@ -8,8 +8,8 @@
   font-family: "JetBrainsMono-Medium";
 }
 
-.nav:hover {
-  box-shadow: 0px 10px 5px -5px rgba(0,0,0,0.2);
+.rbnav:hover {
+  box-shadow: 0px 10px 5px -5px rgba(0, 0, 0, 0.2);
 }
 
 .main-panel {
@@ -21,7 +21,7 @@
 }
 
 .main-panel:hover {
-  box-shadow: 0px 10px 5px -5px rgba(0,0,0,0.2);
+  box-shadow: 0px 10px 5px -5px rgba(0, 0, 0, 0.2);
 }
 
 .portrait-panel {
@@ -29,14 +29,28 @@
 }
 
 .portrait-panel:hover {
-  box-shadow: 0px 10px 5px -5px rgba(0,0,0,0.2);
+  box-shadow: 0px 10px 5px -5px rgba(0, 0, 0, 0.2);
 }
 
 .portrait-header {
   font-size: smaller;
 }
 
-.portrait-body {
+.portrait-body, .snippet-header, .segment-body {
   font-size: x-small;
-  /* padding: 0; */
+}
+
+.snippet-code {
+  font-size: small;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.post-title {
+  font-size: large;
+  font-weight: bold;
+}
+
+.post-timestamp {
+  font-size: xx-small;
+  color: rgba(0, 0, 0, 0.5);
 }
