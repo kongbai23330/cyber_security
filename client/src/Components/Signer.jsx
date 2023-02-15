@@ -8,6 +8,7 @@ import {
   ButtonGroup,
   InputGroup,
 } from "react-bootstrap";
+import { redirect } from "react-router-dom";
 
 export default class Signer extends React.Component {
   constructor(props) {
@@ -21,7 +22,19 @@ export default class Signer extends React.Component {
     };
   }
 
-  renderSignUp = () => {
+  renderSignUp = async() => {
+    const { username, password } = this.state
+    if(username.length < 6) return alert('Username at least 6 characters') 
+    if (
+      password.length < 8 ||
+      !/[a-z]/.test(password) ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password) ||
+      !/[~`!@#$%^&*()-_+={}[]|\\;:"<>,\.\/\?]/.test(password)
+    ) return alert('Password not strong enough')
+    const pro = await fetch('http://127.0.0.1:3001/user/validate/' + username)
+    const res = await pro.json()
+    if(res.exists) return alert('Username already exists')
     this.setState({
       signUp: true,
     });
@@ -34,9 +47,49 @@ export default class Signer extends React.Component {
     });
   };
 
-  postSignUp = () => {
-    console.log("register")
-    // fetch ...
+  postSignUp = async() => {
+    const { username, password, bio, confirm } = this.state
+    if(password !== confirm) {
+      this.setState({
+        signUp: false
+      })
+      return alert('Repeated password not match')
+    }
+    const pro = await fetch('http://127.0.0.1:3001/user/signup/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+        bio: bio
+      })
+    })
+    const res = await pro.json()
+    if(!res.success) return alert('Something went wrong')
+    this.setState({
+      signUp: false
+    })
+    return alert('Sign up success')
+  }
+
+  handleSignIn = async() => {
+    const pro = await fetch('http://127.0.0.1:3001/user/signin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password
+      })
+    })
+    const res = await pro.json()
+    if(!res.success) return alert(res.errno)
+    localStorage.setItem('token', res.token)
+    alert('Sign in success')
+    // (document.querySelector('#redirect')).click()
   }
 
   render() {
@@ -90,7 +143,7 @@ export default class Signer extends React.Component {
                     onChange={this.handleChange}
                     placeholder="Password"
                   />
-                  <Button variant="outline-primary">
+                  <Button variant="outline-primary" onClick={this.handleSignIn}>
                     Sign In
                   </Button>
                   <Button variant="outline-primary" onClick={this.renderSignUp}>
@@ -101,6 +154,7 @@ export default class Signer extends React.Component {
             )}
           </Card.Body>
         </Card>
+        <button id='redirect' href='/' hidden/>
       </div>
     );
   }
