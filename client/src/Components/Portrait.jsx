@@ -3,9 +3,33 @@ import React from "react";
 import { Card, Button, Form, InputGroup, Row, Col } from "react-bootstrap";
 
 export default class Protrait extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      title: null,
+      firstContent: null
+    }
+  }
+
+  componentDidMount = async() => {
+    const { postId } = this.props
+    const pro = await fetch('http://127.0.0.1:3001/post/get/' + postId, {
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+        "Content-Type": "application/json",
+      }
+    })
+    const res = await pro.json()
+    this.setState({
+      title: res.post.title,
+      firstContent: res.firstContent
+    })
+  }
+
   render() {
+    const { title, firstContent } = this.state
     return (
-      <div className="portrait-panel">
+      <div className="portrait-panel" id={this.props.postId}>
         <Card>
           <Card.Header
             className="portrait-header"
@@ -16,7 +40,7 @@ export default class Protrait extends React.Component {
               paddingLeft: 15,
             }}
           >
-            B+ tree in java
+            {title}
           </Card.Header>
           <Card.Body
             className="portrait-body"
@@ -27,12 +51,7 @@ export default class Protrait extends React.Component {
               paddingLeft: 10,
             }}
           >
-            In computer science, a red-black tree is a kind of self-balancing
-            binary search tree. In addition to the user data (search key and
-            other data) and the pointers of the binary search tree (BST), each
-            node stores an extra bit representing "red" and "black" (called
-            "color") which helps to keep the tree balanced during insertions and
-            deletions.
+            {firstContent}
           </Card.Body>
         </Card>
       </div>

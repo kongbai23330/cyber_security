@@ -8,8 +8,7 @@ const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const expressJWT = require("express-jwt");
-const cors = require('cors');
-// const { userSchema, postSchema, commentSchema } = require("./schema");
+const cors = require("cors");
 
 const app = express();
 
@@ -83,7 +82,8 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  content: [{ type: Number }],
+  contents: [{ type: Number }],
+  comments: [{ type: Number }],
   ups: {
     type: Number,
     required: true,
@@ -100,10 +100,6 @@ const postSchema = new mongoose.Schema({
 
 const contentSchema = new mongoose.Schema({
   contentId: {
-    type: Number,
-    required: true,
-  },
-  postId: {
     type: Number,
     required: true,
   },
@@ -126,10 +122,6 @@ const commentSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  postId: {
-    type: Number,
-    required: true,
-  },
   content: {
     type: String,
     required: true,
@@ -145,6 +137,7 @@ const Post = mongoose.model("Posts", postSchema);
 const Content = mongoose.model("Contents", contentSchema);
 const Comment = mongoose.model("Comments", commentSchema);
 
+// check is username already exists
 app.get("/user/validate/:username", (req, res) => {
   const { username } = req.params;
   User.findOne({ username: username }, (err, user) => {
@@ -154,15 +147,17 @@ app.get("/user/validate/:username", (req, res) => {
   });
 });
 
+// user signup and login
 app.post("/user/signup", (req, res) => {
   const { username, password, bio } = req.body;
   User.findOne({ username: username }, (err, user) => {
-    if(err) throw err
-    if(user) return res.status(400).send({
-      success: false,
-      errno: "USEREXISTS"
-    })
-  })
+    if (err) throw err;
+    if (user)
+      return res.status(400).send({
+        success: false,
+        errno: "USEREXISTS",
+      });
+  });
   if (
     password.length < 8 ||
     !/[a-z]/.test(password) ||
@@ -218,7 +213,7 @@ app.post("/user/signin", (req, res) => {
         jwtPayload,
         process.env.SECRET,
         {
-          expiresIn: "2m",
+          expiresIn: "2h",
         },
         (err, token) => {
           if (err) throw err;
@@ -232,6 +227,7 @@ app.post("/user/signin", (req, res) => {
   });
 });
 
+// create a post with empty template
 app.post("/post/create", (req, res) => {
   const { userId, title } = req.body;
   User.findOne({ userId: userId }, (err, user) => {
@@ -259,6 +255,26 @@ app.post("/post/create", (req, res) => {
   });
 });
 
+// get last few records to display on index page
+app.get("/post/last", (req, res) => {
+  Post.find()
+    .sort({ id: -1 })
+    .limit(5)
+    .exec((err, posts) => {
+      if (err) throw err;
+      if (!posts)
+        return res.status(404).send({
+          success: true,
+          errno: "NOPOSTEXISTS",
+        });
+      return res.send({
+        success: true,
+        posts,
+      });
+    });
+});
+
+// add a snippet/segment to post template
 app.post("/post/push", (req, res) => {
   const { postId, language, storage } = req.body;
   Post.findOne({ postId: postId }, (err, post) => {
@@ -268,13 +284,15 @@ app.post("/post/push", (req, res) => {
         success: false,
         errno: "POSTNOTFOUND",
       });
+    let now = Date.now();
     new Content({
-      contentId: Date.now(),
-      postId: postId,
+      contentId: now,
       language: language,
       storage: storage,
     }).save((err) => {
       if (err) throw err;
+      post.contents.push(now);
+      post.save();
       res.status(201).send({
         success: true,
       });
@@ -282,36 +300,97 @@ app.post("/post/push", (req, res) => {
   });
 });
 
-app.post("/comment/write", (req, res) => {
-  const { userId, postId, content } = req.body;
-  User.findOne({ userId: userId }, (err, user) => {
+// fuzzy query posts with title
+app.get("/post/query/:title", (req, res) => {
+  const { title } = req.params;
+  Post.find({ title: { $regex: title, $options: "i" } }, (err, posts) => {
     if (err) throw err;
-    if (!user)
-      return res.status(401).send({
-        success: false,
-        errno: "USERNOTFOUND",
-      });
-    Post.findOne({ postId: postId }, (err, post) => {
-      if (err) throw err;
-      if (!post)
-        return res.status(401).send({
-          success: false,
-          errno: "POSTNOTFOUND",
-        });
-      let now = Date.now();
-      new Comment({
-        commentId: now,
-        userId: userId,
-        postId: postId,
-        content: content,
-      }).save((err) => {
-        if (err) throw err;
-        return res.status(201).send({
-          success: true,
-        });
-      });
+    return res.send({
+      success: true,
+      posts,
     });
   });
 });
+
+app.get("/post/get/:postId", (req, res) => {
+  const { postId } = req.params;
+  Post.findOne({ postId: postId }, (err, post) => {
+    if (err) throw err;
+    if (!post)
+      return res.status(404).send({
+        success: false,
+        errno: "IDINVALID",
+      });
+    if (post.contents.length !== 0)
+      Content.findOne({ contentId: post.contents[0] }, (err, content) => {
+        if (err) throw err;
+        if (content)
+          return res.send({
+            success: true,
+            post,
+            firstContent: content.storage,
+          });
+      });
+    else
+      return res.send({
+        success: true,
+        post,
+      });
+  });
+});
+
+/* 
+get a snippet/segment with id
+since contents are stored in the array as numbers of the post
+ */
+app.get("/content/query/:id", (req, res) => {
+  const { id } = req.params;
+  Content.findOne({ contentId: id }, (err, content) => {
+    if (err) throw err;
+    if (!content)
+      return res.status(404).send({
+        success: false,
+        errno: "NOSUCHCONTENT",
+      });
+    return res.send({
+      success: true,
+      content,
+    });
+  });
+});
+
+// write a comment
+// app.post("/comment/write", (req, res) => {
+//   const { userId, postId, content } = req.body;
+//   User.findOne({ userId: userId }, (err, user) => {
+//     if (err) throw err;
+//     if (!user)
+//       return res.status(401).send({
+//         success: false,
+//         errno: "USERNOTFOUND",
+//       });
+//     Post.findOne({ postId: postId }, (err, post) => {
+//       if (err) throw err;
+//       if (!post)
+//         return res.status(401).send({
+//           success: false,
+//           errno: "POSTNOTFOUND",
+//         });
+//       let now = Date.now();
+//       new Comment({
+//         commentId: now,
+//         userId: userId,
+//         postId: postId,
+//         content: content,
+//         lastEdit: now,
+//       }).save((err) => {
+//         if (err) throw err;
+//         return res.status(201).send({
+//           success: true,
+//         });
+//       });
+//     });
+//   });
+// });
 
 module.exports = app;
