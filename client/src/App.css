@@ -54,3 +54,8 @@
   font-size: xx-small;
   color: rgba(0, 0, 0, 0.5);
 }
+
+.profile-id {
+  font-size: x-small;
+  color: rgba(0, 0, 0, 0.8);
+}

@@ -19,19 +19,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.resolve("..", "client", "build")));
-  app.get("*", (req, res) =>
-    res.sendFile(path.resolve("..", "client", "build", "index.html"))
-  );
-} else if (process.env.NODE_ENV === "development") {
-  var corsOptions = {
-    origin: "http://localhost:3000",
-    optionsSuccessStatus: 200,
-  };
-  app.use(corsOptions);
-}
-
 app.use(
   "/",
   expressJWT
@@ -39,7 +26,7 @@ app.use(
       secret: process.env.SECRET,
       algorithms: ["HS256"],
     })
-    .unless({ path: [/\/user/] })
+    .unless({ path: [/\/user/, /\/post\/last/, /\/post\/get/] })
 );
 
 mongoose.set("strictQuery", true);
@@ -48,94 +35,10 @@ mongoose.connect("mongodb://localhost:27017/testdb", (err, client) => {
   if (client) console.log("---Mongodb Connected---\n");
 });
 
-const userSchema = new mongoose.Schema({
-  userId: {
-    type: Number,
-    required: true,
-  },
-  username: {
-    type: String,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  avatar: {
-    type: Buffer,
-  },
-  bio: {
-    type: String,
-  },
-});
-
-const postSchema = new mongoose.Schema({
-  postId: {
-    type: Number,
-    required: true,
-  },
-  userId: {
-    type: Number,
-    required: true,
-  },
-  title: {
-    type: String,
-    required: true,
-  },
-  contents: [{ type: Number }],
-  comments: [{ type: Number }],
-  ups: {
-    type: Number,
-    required: true,
-  },
-  downs: {
-    type: Number,
-    required: true,
-  },
-  lastEdit: {
-    type: Number,
-    required: true,
-  },
-});
-
-const contentSchema = new mongoose.Schema({
-  contentId: {
-    type: Number,
-    required: true,
-  },
-  language: {
-    type: String,
-    required: true,
-  },
-  storage: {
-    type: String,
-    required: true,
-  },
-});
-
-const commentSchema = new mongoose.Schema({
-  commentId: {
-    type: Number,
-    required: true,
-  },
-  userId: {
-    type: Number,
-    required: true,
-  },
-  content: {
-    type: String,
-    required: true,
-  },
-  lastEdit: {
-    type: Number,
-    required: true,
-  },
-});
-
-const User = mongoose.model("Users", userSchema);
-const Post = mongoose.model("Posts", postSchema);
-const Content = mongoose.model("Contents", contentSchema);
-const Comment = mongoose.model("Comments", commentSchema);
+const User = require("./model/User");
+const Post = require("./model/Post");
+const Content = require("./model/Content");
+const Comment = require("./model/Comment");
 
 // check is username already exists
 app.get("/user/validate/:username", (req, res) => {
@@ -226,6 +129,39 @@ app.post("/user/signin", (req, res) => {
     });
   });
 });
+
+app.get("/profile/info", (req, res) => {
+  const { userId, username } = req.auth
+  User.findOne({ userId: userId }, (err, user) => {
+    if(err) throw err
+    return res.send({
+      username,
+      avatar: user.avatar,
+      bio: user.bio,
+      userId: userId
+    })
+  })
+});
+
+app.post('/profile/update', (req, res) => {
+  const { userId, username, bio } = req.body
+  User.findOne({ userId: userId }, (err, user) => {
+    if(err) throw err
+    if(!user) return res.send({
+      success: false,
+      errno: "USERNOTFOUND"
+    })
+    user.username = username
+    user.bio = bio
+    user.save((err, update) => {
+      if(err) throw err
+      return res.send({
+        success: true,
+        update
+      })
+    })
+  })
+})
 
 // create a post with empty template
 app.post("/post/create", (req, res) => {

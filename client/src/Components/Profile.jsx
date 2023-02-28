@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import { Card, Button, Row, Col, Figure, ButtonGroup } from "react-bootstrap";
+import { Card, Button, Row, Col, Figure, ButtonGroup, Form } from "react-bootstrap";
 import Sample from '../Public/sample.jpg';
 
 export default class Profile extends React.Component {
@@ -9,9 +9,27 @@ export default class Profile extends React.Component {
     this.state = {
       avatar: null,
       username: 'NOT SIGNED IN',
-      userintro: 'The autumn leaves danced in the breeze, their vibrant colors painting the landscape with hues of red, orange, and yellow. The crisp air filled the senses, carrying the scent of woodsmoke and fallen leaves.',
+      bio: 'NOT SIGNED IN',
+      userId: null,
       editing: false
     }
+  }
+
+  componentDidMount = async() => {
+    const token = localStorage.getItem("token")
+    const pro = await fetch('http://localhost:3001/profile/info', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+    const res = await pro.json()
+    this.setState({
+      avatar: res.avatar,
+      username: res.username,
+      bio: res.bio,
+      userId: res.userId
+    })
   }
 
   startEdit = () => {
@@ -25,7 +43,37 @@ export default class Profile extends React.Component {
     })
   }
 
+  handleChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({
+      [name]: value,
+    });
+  };
+
+  handleSave = async() => {
+    const { userId, username, bio } = this.state
+    const token = localStorage.getItem("token")
+    const pro = await fetch('http://localhost:3001/profile/update', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: userId,
+        username: username,
+        bio: bio
+      })
+    })
+    const res = await pro.json()
+    if(res.success) alert('Modification Saved')
+    this.setState({
+      editing: false
+    })
+  }
+
   render() {
+    const { userId, username, bio, avatar, editing } = this.state
     return (
       <div className="main-panel">
       <Card>
@@ -38,17 +86,28 @@ export default class Profile extends React.Component {
               </Figure>
             </Col>
             <Col>
-              <h2>{this.state.username}</h2>
-              <p>{this.state.userintro}</p>
+            {editing ? (
+              <>
+              <Form.Control name='username' value={username} onChange={this.handleChange} />
+              <br />
+              <Form.Control as='textarea' name='bio' value={bio} onChange={this.handleChange} />
+              </>
+            ) : (
+              <>
+              <h2>{username}</h2>
+              <p className="profile-id">ID: {userId}</p>
+              <p>{bio}</p>
+              </>
+            )}
             </Col>
           </Row>
 
         </Card.Body>
         <Card.Footer className="text-center">
           <ButtonGroup>
-            {this.state.editing ? (
+            {editing ? (
               <>
-              <Button variant='outline-primary' size='sm'>Save</Button>
+              <Button variant='outline-primary' size='sm' onClick={this.handleSave}>Save</Button>
               <Button variant='outline-primary' size='sm' onClick={this.endEdit}>Close</Button>
               </>
             ) : (

@@ -1,47 +1,44 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import {
-  Navbar,
-  Button,
-  Container,
-  Nav,
-  ButtonGroup,
-} from "react-bootstrap";
+import { Navbar, Button, Container, Nav, ButtonGroup } from "react-bootstrap";
 
 export default class RBNav extends React.Component {
   constructor(props) {
-    super(props)
-    this.state = {
-      // sign: 'null',
-      sign: null
-    }
+    super(props);
+    this.state = {};
   }
 
+  handleSignOut = () => {
+    this.props.handleSignOut();
+  };
+
   render() {
+    const { signed, username } = this.props;
     return (
       <div className="rbnav">
         <Navbar bg="light" expand="lg">
           <Container>
-            <Navbar.Brand href='/'>
-              HeapOverflow
-            </Navbar.Brand>
+            <Navbar.Brand href="/">HeapOverflow</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">
                 <ButtonGroup size="sm">
-                  {this.state.sign ? (
+                  {signed ? (
                     <>
-                    <Button variant="outline-primary" href="/profile">
-                      {this.state.sign}
-                    </Button>
-                    <Button  variant="outline-primary" href="#">
-                      Sign Out
-                    </Button>
+                      <Button variant="outline-primary" href="/profile">
+                        {username}
+                      </Button>
+                      <Button
+                        variant="outline-primary"
+                        onClick={this.handleSignOut}
+                      >
+                        Sign Out
+                      </Button>
                     </>
                   ) : (
-                  <Button variant="outline-primary" href="/sign">
-                    Sign
-                  </Button>
+                    <Button variant="outline-primary" href="/sign">
+                      Sign In
+                    </Button>
                   )}
                   <Button
                     variant="outline-primary"

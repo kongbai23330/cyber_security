@@ -23,12 +23,13 @@ export default class Index extends React.Component {
   }
 
   componentDidMount = async () => {
+    const token = localStorage.getItem("token")
     this.setState({
       loading: true,
     });
-    const pro = await fetch("http://127.0.0.1:3001/post/last", {
+    const pro = await fetch("http://localhost:3001/post/last", {
       headers: {
-        Authorization: "Bearer " + localStorage.getItem("token"),
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
@@ -48,15 +49,16 @@ export default class Index extends React.Component {
 
   searchOnClick = async() => {
     const { search } = this.state
+    const token = localStorage.getItem("token")
     this.setState({
       loading: true
     })
     let url, title = search.replace(/\s/g, '')
-    if(!title) url = 'http://127.0.0.1:3001/post/last'
-    else url = 'http://127.0.0.1:3001/post/query/' + search
+    if(!title) url = 'http://localhost:3001/post/last'
+    else url = 'http://localhost:3001/post/query/' + search
     const pro = await fetch(url, {
       headers: {
-        Authorization: "Bearer " + localStorage.getItem("token"),
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       }
     })

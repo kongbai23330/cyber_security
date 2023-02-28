@@ -1,19 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import {
-  Card,
-  Form,
-  Button,
-  Nav,
-  ButtonGroup,
-  InputGroup,
-} from "react-bootstrap";
-import {
-  BrowserRouter as Router,
-  Navigate,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { Card, Form, Button, InputGroup } from "react-bootstrap";
+import { Navigate } from "react-router-dom";
 
 export default class Signer extends React.Component {
   constructor(props) {
@@ -95,9 +83,14 @@ export default class Signer extends React.Component {
     const res = await pro.json();
     if (!res.success) return alert(res.errno);
     localStorage.setItem("token", res.token);
-    this.setState({
-      login: true,
-    });
+    this.setState(
+      () => {
+        return { login: true };
+      },
+      () => {
+        this.props.updateBasic();
+      }
+    );
     alert("Login Successful");
   };
 
@@ -191,7 +184,6 @@ export default class Signer extends React.Component {
                 )}
               </Card.Body>
             </Card>
-            <button id="redirect" href="/" hidden />
           </div>
         )}
       </>
