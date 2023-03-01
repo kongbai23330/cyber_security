@@ -3,10 +3,10 @@ import React from "react";
 import { Navbar, Button, Container, Nav, ButtonGroup } from "react-bootstrap";
 
 export default class RBNav extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {};
+  // }
 
   handleSignOut = () => {
     this.props.handleSignOut();

@@ -13,9 +13,10 @@ export default class Protrait extends React.Component {
 
   componentDidMount = async() => {
     const { postId } = this.props
-    const pro = await fetch('http://127.0.0.1:3001/post/get/' + postId, {
+    const token = localStorage.getItem("token")
+    const pro = await fetch(`http://127.0.0.1:3001/post/get/${postId}`, {
       headers: {
-        Authorization: "Bearer " + localStorage.getItem("token"),
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       }
     })
@@ -26,10 +27,15 @@ export default class Protrait extends React.Component {
     })
   }
 
+  handleJump = () => {
+    this.props.jump(this.props.postId)
+  }
+
   render() {
     const { title, firstContent } = this.state
+    const { postId } = this.props
     return (
-      <div className="portrait-panel" id={this.props.postId}>
+      <div className="portrait-panel" id={postId} onClick={this.handleJump} >
         <Card>
           <Card.Header
             className="portrait-header"

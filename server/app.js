@@ -26,7 +26,7 @@ app.use(
       secret: process.env.SECRET,
       algorithms: ["HS256"],
     })
-    .unless({ path: [/\/user/, /\/post\/last/, /\/post\/get/] })
+    .unless({ path: [/\/user/, /\/post\/last/] })
 );
 
 mongoose.set("strictQuery", true);
@@ -131,41 +131,54 @@ app.post("/user/signin", (req, res) => {
 });
 
 app.get("/profile/info", (req, res) => {
-  const { userId, username } = req.auth
+  const { userId, username } = req.auth;
   User.findOne({ userId: userId }, (err, user) => {
-    if(err) throw err
+    if (err) throw err;
+    if (!user)
+      return res.status(404).send({
+        success: false,
+        errno: "USERNOTFOUND",
+      });
     return res.send({
+      success: true,
       username,
       avatar: user.avatar,
       bio: user.bio,
-      userId: userId
-    })
-  })
+      userId: userId,
+    });
+  });
 });
 
-app.post('/profile/update', (req, res) => {
-  const { userId, username, bio } = req.body
+app.post("/profile/update", (req, res) => {
+  const { userId } = req.auth;
+  const { username, bio } = req.body;
   User.findOne({ userId: userId }, (err, user) => {
-    if(err) throw err
-    if(!user) return res.send({
-      success: false,
-      errno: "USERNOTFOUND"
-    })
-    user.username = username
-    user.bio = bio
+    if (err) throw err;
+    if (!user)
+      return res.status(404).send({
+        success: false,
+        errno: "USERNOTFOUND",
+      });
+    user.username = username;
+    user.bio = bio;
     user.save((err, update) => {
-      if(err) throw err
+      if (err) throw err;
       return res.send({
         success: true,
-        update
-      })
-    })
-  })
-})
+        update,
+      });
+    });
+  });
+});
 
 // create a post with empty template
 app.post("/post/create", (req, res) => {
-  const { userId, title } = req.body;
+  const { userId } = req.auth
+  const { title, firstContent } = req.body;
+  if(!title || !firstContent) return res.status(403).send({
+    success: false,
+    errno: 'INFOMISSING'
+  })
   User.findOne({ userId: userId }, (err, user) => {
     if (err) throw err;
     if (!user)
@@ -174,20 +187,27 @@ app.post("/post/create", (req, res) => {
         errno: "USERNOTFOUND",
       });
     let now = Date.now();
-    new Post({
-      postId: now,
-      userId: userId,
-      title: title,
-      content: [],
-      ups: 0,
-      downs: 0,
-      lastEdit: now,
+    new Content({
+      contentId: now,
+      language: 'raw',
+      storage: firstContent
     }).save((err) => {
-      if (err) throw err;
-      return res.status(201).send({
-        success: true,
+      if(err) throw err
+      new Post({
+        postId: now,
+        userId: userId,
+        title: title,
+        contents: [now],
+        ups: [],
+        downs: [],
+        lastEdit: now,
+      }).save((err) => {
+        if (err) throw err;
+        return res.status(201).send({
+          success: true,
+        });
       });
-    });
+    })
   });
 });
 
@@ -236,7 +256,7 @@ app.post("/post/push", (req, res) => {
   });
 });
 
-// fuzzy query posts with title
+// query posts with title
 app.get("/post/query/:title", (req, res) => {
   const { title } = req.params;
   Post.find({ title: { $regex: title, $options: "i" } }, (err, posts) => {
@@ -249,6 +269,8 @@ app.get("/post/query/:title", (req, res) => {
 });
 
 app.get("/post/get/:postId", (req, res) => {
+  let userId, vote
+  if(req.auth) userId = req.auth.userId
   const { postId } = req.params;
   Post.findOne({ postId: postId }, (err, post) => {
     if (err) throw err;
@@ -257,21 +279,51 @@ app.get("/post/get/:postId", (req, res) => {
         success: false,
         errno: "IDINVALID",
       });
-    if (post.contents.length !== 0)
-      Content.findOne({ contentId: post.contents[0] }, (err, content) => {
-        if (err) throw err;
-        if (content)
-          return res.send({
-            success: true,
-            post,
-            firstContent: content.storage,
-          });
-      });
-    else
+    Content.findOne({ contentId: post.contents[0] }, (err, content) => {
+      if(err) throw err
+      if(post.ups.includes(userId)) vote = true;
+      else if(post.downs.includes(userId)) vote = false
+      else vote = null
       return res.send({
         success: true,
         post,
+        firstContent: content.storage,
+        vote: vote
       });
+    })
+  });
+});
+
+app.post("/post/vote", (req, res) => {
+  const { userId } = req.auth;
+  const { postId, vote } = req.body;
+  User.findOne({ userId: userId }, (err, user) => {
+    if (err) throw err;
+    if (!user)
+      return res.status(404).send({
+        success: false,
+        errno: "USERNOTFOUND",
+      });
+    Post.findOne({ postId: postId }, (err, post) => {
+      if (err) throw err;
+      if (!post)
+        return res.status(404).send({
+          success: false,
+        });
+      if (post.ups.includes(userId) || post.downs.includes(userId))
+        return res.status(403).send({
+          success: false,
+          errno: "ALREADYVOTED",
+        });
+      if (vote) post.ups.push(userId);
+      else post.downs.push(userId);
+      post.save((err) => {
+        if (err) throw err;
+        return res.send({
+          success: true,
+        });
+      });
+    });
   });
 });
 

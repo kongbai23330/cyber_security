@@ -27,7 +27,7 @@ export default class Signer extends React.Component {
       !/[~`!@#$%^&*()-_+={}[]|\\;:"<>,\.\/\?]/.test(password)
     )
       return alert("Password not strong enough");
-    const pro = await fetch("http://127.0.0.1:3001/user/validate/" + username);
+    const pro = await fetch("http://localhost:3001/user/validate/" + username);
     const res = await pro.json();
     if (res.exists) return alert("Username already exists");
     this.setState({
@@ -50,7 +50,7 @@ export default class Signer extends React.Component {
       });
       return alert("Repeated password not match");
     }
-    const pro = await fetch("http://127.0.0.1:3001/user/signup/", {
+    const pro = await fetch("http://localhost:3001/user/signup/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -70,7 +70,7 @@ export default class Signer extends React.Component {
   };
 
   handleSignIn = async () => {
-    const pro = await fetch("http://127.0.0.1:3001/user/signin", {
+    const pro = await fetch("http://localhost:3001/user/signin", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -81,7 +81,12 @@ export default class Signer extends React.Component {
       }),
     });
     const res = await pro.json();
-    if (!res.success) return alert(res.errno);
+    if (!res.success) {
+      this.setState({
+        password: ''
+      })
+      return alert(res.errno);
+    }
     localStorage.setItem("token", res.token);
     this.setState(
       () => {

@@ -25,9 +25,9 @@ export default class Snippet extends React.Component {
   }
 
   highlightCallBack = () => {
-    document.querySelectorAll("pre").forEach((block) => {
+    document.querySelectorAll("pre").forEach((element) => {
       try {
-        hljs.highlightBlock(block);
+        hljs.highlightElement(element);
       } catch (e) {
         console.log(e);
       }
@@ -35,14 +35,15 @@ export default class Snippet extends React.Component {
   };
 
   render() {
+    const { language } = this.state
     return (
       <div className="snippet-panel">
         <div style={{ height: 10 }} />
         <div className="snippet-header">
-          <Badge bg="secondary">{this.state.language}</Badge>
+          <Badge bg="secondary">{language}</Badge>
         </div>
         <div className="snippet-code">
-          <pre className={this.state.language} style={{ margin: 0 }}>
+          <pre className={language} style={{ margin: 0 }}>
             <code>
               {/* import React, {"\u007b"} Component {"\u007d"} from 'react' {"\n"}
               import hljs from 'highlight.js';{"\n"}

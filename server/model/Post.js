@@ -15,14 +15,8 @@ const postSchema = new mongoose.Schema({
   },
   contents: [{ type: Number }],
   comments: [{ type: Number }],
-  ups: {
-    type: Number,
-    required: true,
-  },
-  downs: {
-    type: Number,
-    required: true,
-  },
+  ups: [{ type: Number }],
+  downs: [{ type: Number }],
   lastEdit: {
     type: Number,
     required: true,

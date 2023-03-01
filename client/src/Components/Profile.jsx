@@ -51,7 +51,7 @@ export default class Profile extends React.Component {
   };
 
   handleSave = async() => {
-    const { userId, username, bio } = this.state
+    const { username, bio } = this.state
     const token = localStorage.getItem("token")
     const pro = await fetch('http://localhost:3001/profile/update', {
       method: 'POST',
@@ -60,7 +60,6 @@ export default class Profile extends React.Component {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        userId: userId,
         username: username,
         bio: bio
       })

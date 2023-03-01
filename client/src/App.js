@@ -19,10 +19,6 @@ class App extends React.Component {
     }
   }
 
-  componentDidMount = () => {
-    this.loadBasic()
-  }
-
   loadBasic = async() => {
     const token = localStorage.getItem("token")
     const pro = await fetch('http://localhost:3001/profile/info', {
@@ -38,6 +34,10 @@ class App extends React.Component {
       avatar: res.avatar,
       bio: res.bio
     })
+  }
+
+  componentDidMount = () => {
+    this.loadBasic()
   }
 
   updateBasic = () => {
@@ -66,11 +66,9 @@ class App extends React.Component {
           />
           <Routes>
             <Route path="/" exact element={<Index />} />
-            {/* /profile/:userId */}
-            <Route path="/post/:postid" element={<p>post</p>} />
+            <Route path="/post/:postid" element={<Post />} />
             <Route path="/sign" element={<Signer updateBasic={this.updateBasic} />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/test" element={<Post />} />
           </Routes>
         </Router>
       </>
