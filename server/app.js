@@ -331,7 +331,7 @@ app.post("/post/vote", (req, res) => {
 get a snippet/segment with id
 since contents are stored in the array as numbers of the post
  */
-app.get("/content/query/:id", (req, res) => {
+app.get("/content/get/:id", (req, res) => {
   const { id } = req.params;
   Content.findOne({ contentId: id }, (err, content) => {
     if (err) throw err;

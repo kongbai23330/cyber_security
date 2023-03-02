@@ -9,13 +9,6 @@ hljs.configure({
 });
 
 export default class Snippet extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      language: "Python",
-    };
-  }
-
   componentDidMount() {
     this.highlightCallBack();
   }
@@ -35,21 +28,18 @@ export default class Snippet extends React.Component {
   };
 
   render() {
-    const { language } = this.state
+    const { language, storage } = this.props
+    const Lang = language.replace(/^\w/, c => c.toUpperCase())
     return (
       <div className="snippet-panel">
         <div style={{ height: 10 }} />
         <div className="snippet-header">
-          <Badge bg="secondary">{language}</Badge>
+          <Badge bg="secondary">{Lang}</Badge>
         </div>
         <div className="snippet-code">
           <pre className={language} style={{ margin: 0 }}>
             <code>
-              {/* import React, {"\u007b"} Component {"\u007d"} from 'react' {"\n"}
-              import hljs from 'highlight.js';{"\n"}
-              import 'highlight.js/styles/default.css'; */}
-              if __name__ == '__main__':{"\n"}
-              {"\t"}print('hello')
+              {storage}
             </code>
           </pre>
         </div>
