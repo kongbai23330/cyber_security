@@ -66,9 +66,11 @@ class App extends React.Component {
           />
           <Routes>
             <Route path="/" exact element={<Index />} />
-            <Route path="/post/:postid" element={<Post />} />
             <Route path="/sign" element={<Signer updateBasic={this.updateBasic} />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/post/:postid" element={<Post />} />
+            <Route path="/post/add/:title" element={<p>muli</p>} />
+            <Route path="*" element={<h1>404: NOT THE PAGE YOU ARE LOOKING FOR</h1>} />
           </Routes>
         </Router>
       </>

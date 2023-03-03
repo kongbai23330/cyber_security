@@ -18,9 +18,10 @@ export default class Index extends React.Component {
     super(props);
     this.state = {
       loading: false,
-      search: "",
+      title: "",
       posts: [],
       jump: null,
+      add: null,
     };
   }
 
@@ -50,14 +51,14 @@ export default class Index extends React.Component {
   };
 
   searchOnClick = async () => {
-    const { search } = this.state;
+    const { title } = this.state;
     const token = localStorage.getItem("token");
     this.setState({
       loading: true,
     });
     let url,
-      title = search.replace(/\s/g, "");
-    if (!title) url = "http://localhost:3001/post/last";
+      search = title.replace(/\s/g, "");
+    if (!search) url = "http://localhost:3001/post/last";
     else url = "http://localhost:3001/post/query/" + search;
     const pro = await fetch(url, {
       headers: {
@@ -69,6 +70,7 @@ export default class Index extends React.Component {
     this.setState({
       posts: res.posts.map((post) => post.postId),
       loading: false,
+      title: "",
     });
   };
 
@@ -84,66 +86,70 @@ export default class Index extends React.Component {
     });
   };
 
+  handleAdd = () => {
+    const { title } = this.state;
+    if (title)
+      this.setState({
+        add: true,
+      });
+    else alert("Title is required");
+  };
+
   render() {
-    const { posts, search, jump } = this.state;
+    const { posts, title, jump, add } = this.state;
     return (
       <>
-        {jump ? (
-          <Navigate to={`/post/${jump}`} />
-        ) : (
-          <>
-            <div className="main-panel">
-              <Card>
-                <Card.Header>
-                  <InputGroup>
-                    <Form.Control
-                      size="sm"
-                      placeholder="Search for a post..."
-                      name="search"
-                      value={search}
-                      onChange={this.searchOnChange}
-                      autoComplete="off"
-                    ></Form.Control>
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      onClick={this.searchOnClick}
-                    >
-                      Search
-                    </Button>
-                  </InputGroup>
-                </Card.Header>
-                <Card.Body>
-                  {posts.length === 0 ? (
-                    <p>No matched result</p>
-                  ) : (
-                    posts.map((post) => (
-                      <Protrait
-                        postId={post}
-                        key={post}
-                        jump={this.handleJump}
-                      />
-                    ))
-                  )}
-                </Card.Body>
-                <Card.Footer className="text-center">
-                  {this.state.loading ? (
-                    <Spinner animation="border" variant="primary" size="sm" />
-                  ) : (
-                    // <Button
-                    //   size="sm"
-                    //   variant="outline-primary"
-                    //   onClick={this.loadMore}
-                    // >
-                    //   Load more
-                    // </Button>
-                    <></>
-                  )}
-                </Card.Footer>
-              </Card>
-            </div>
-          </>
-        )}
+        {jump && <Navigate to={`/post/${jump}`} />}
+        {add && <Navigate to={`/post/add/${title}`} />}
+        <>
+          <div className="main-panel">
+            <Card>
+              <Card.Header>
+                <InputGroup size="sm">
+                  <Form.Control
+                    placeholder="Enter a post title..."
+                    name="title"
+                    value={title}
+                    onChange={this.searchOnChange}
+                    autoComplete="off"
+                  ></Form.Control>
+                  <Button
+                    variant="outline-primary"
+                    onClick={this.searchOnClick}
+                  >
+                    Search
+                  </Button>
+                  <Button variant="outline-primary" onClick={this.handleAdd}>
+                    Add
+                  </Button>
+                </InputGroup>
+              </Card.Header>
+              <Card.Body>
+                {posts.length === 0 ? (
+                  <p>No matched result</p>
+                ) : (
+                  posts.map((post) => (
+                    <Protrait postId={post} key={post} jump={this.handleJump} />
+                  ))
+                )}
+              </Card.Body>
+              <Card.Footer className="text-center">
+                {this.state.loading ? (
+                  <Spinner animation="border" variant="primary" size="sm" />
+                ) : (
+                  // <Button
+                  //   size="sm"
+                  //   variant="outline-primary"
+                  //   onClick={this.loadMore}
+                  // >
+                  //   Load more
+                  // </Button>
+                  <></>
+                )}
+              </Card.Footer>
+            </Card>
+          </div>
+        </>
       </>
     );
   }

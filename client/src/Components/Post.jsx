@@ -193,7 +193,6 @@ export default class Post extends React.PureComponent {
       language,
       newContent,
     } = this.state;
-    console.log("render", contents);
     return (
       <>
         {back ? (
@@ -319,53 +318,54 @@ export default class Post extends React.PureComponent {
                   )}
                 </div>
               </Card.Body>
-              <Card.Footer>
-                <ButtonGroup>
-                  {vote === null && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        name="up"
-                        onClick={this.handleVote}
-                      >
-                        {ups}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        name="down"
-                        onClick={this.handleVote}
-                      >
-                        {downs}
-                      </Button>
-                    </>
-                  )}
-                  {vote === true && (
-                    <>
-                      <Button size="sm" name="up">
-                        {ups}
-                      </Button>
-                      <Button size="sm" variant="outline-primary" name="down">
-                        {downs}
-                      </Button>
-                    </>
-                  )}
-                  {vote === false && (
-                    <>
-                      <Button size="sm" variant="outline-primary" name="up">
-                        {ups}
-                      </Button>
-                      <Button size="sm" name="down">
-                        {downs}
-                      </Button>
-                    </>
-                  )}
-                </ButtonGroup>
-              </Card.Footer>
+              <Card.Footer></Card.Footer>
             </Card>
           </div>
         )}
+        <div className="vote">
+          <ButtonGroup>
+            {vote === null && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline-primary"
+                  name="up"
+                  onClick={this.handleVote}
+                >
+                  {ups}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline-primary"
+                  name="down"
+                  onClick={this.handleVote}
+                >
+                  {downs}
+                </Button>
+              </>
+            )}
+            {vote === true && (
+              <>
+                <Button size="sm" name="up">
+                  {ups}
+                </Button>
+                <Button size="sm" variant="outline-primary" name="down">
+                  {downs}
+                </Button>
+              </>
+            )}
+            {vote === false && (
+              <>
+                <Button size="sm" variant="outline-primary" name="up">
+                  {ups}
+                </Button>
+                <Button size="sm" name="down">
+                  {downs}
+                </Button>
+              </>
+            )}
+          </ButtonGroup>
+        </div>
       </>
     );
   }

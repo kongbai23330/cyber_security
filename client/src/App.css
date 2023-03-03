@@ -18,6 +18,7 @@
   left: 50%;
   transform: translate(-50%, 0%);
   margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 .main-panel:hover {
@@ -62,4 +63,16 @@
 
 .post-newrow {
   margin-top: 20px;
+}
+
+.vote {
+  position: fixed;
+  bottom: 10%;
+  right: 5%;
+  width: 84px;
+  height: 58px;
+  background-color: white;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 10px;
 }
