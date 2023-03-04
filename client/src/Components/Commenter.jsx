@@ -81,6 +81,7 @@ export default class Commenter extends React.PureComponent {
   };
 
   handleStartWriting = () => {
+    if(!localStorage.getItem('token')) return alert('You must login first')
     this.setState({
       writing: true,
     });

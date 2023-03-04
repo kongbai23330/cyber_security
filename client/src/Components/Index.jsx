@@ -1,35 +1,23 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import {
-  Card,
-  Button,
-  Form,
-  InputGroup,
-  Row,
-  Col,
-  Dropdown,
-} from "react-bootstrap";
+import { Card, Button, Form, InputGroup, ButtonGroup } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
-import Spinner from "react-bootstrap/Spinner";
 import Protrait from "./Portrait";
 
 export default class Index extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      loading: false,
       title: "",
       posts: [],
       jump: null,
       add: null,
+      page: 1,
     };
   }
 
   componentDidMount = async () => {
     const token = localStorage.getItem("token");
-    this.setState({
-      loading: true,
-    });
     const pro = await fetch("http://localhost:3001/post/last", {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -39,7 +27,6 @@ export default class Index extends React.Component {
     const res = await pro.json();
     this.setState({
       posts: res.posts.map((post) => post.postId),
-      loading: false,
     });
   };
 
@@ -53,9 +40,6 @@ export default class Index extends React.Component {
   searchOnClick = async () => {
     const { title } = this.state;
     const token = localStorage.getItem("token");
-    this.setState({
-      loading: true,
-    });
     let url,
       search = title.replace(/\s/g, "");
     if (!search) url = "http://localhost:3001/post/last";
@@ -69,14 +53,7 @@ export default class Index extends React.Component {
     const res = await pro.json();
     this.setState({
       posts: res.posts.map((post) => post.postId),
-      loading: false,
       title: "",
-    });
-  };
-
-  loadMore = async () => {
-    this.setState({
-      loading: true,
     });
   };
 
@@ -87,6 +64,7 @@ export default class Index extends React.Component {
   };
 
   handleAdd = () => {
+    if (!localStorage.getItem("token")) return alert("Login is required");
     const { title } = this.state;
     if (title)
       this.setState({
@@ -95,8 +73,25 @@ export default class Index extends React.Component {
     else alert("Title is required");
   };
 
+  handlePageChange = (e) => {
+    const { page, posts } = this.state;
+    const { name } = e.target;
+    if (name === "prev") {
+      if (page === 1) return alert("You are already on the first page");
+      this.setState({
+        page: page - 1,
+      });
+    } else {
+      if (page >= Math.ceil(posts.length / 10))
+        return alert("You are already on the last page");
+      this.setState({
+        page: page + 1,
+      });
+    }
+  };
+
   render() {
-    const { posts, title, jump, add } = this.state;
+    const { posts, title, jump, add, page } = this.state;
     return (
       <>
         {jump && <Navigate to={`/post/${jump}`} />}
@@ -128,24 +123,37 @@ export default class Index extends React.Component {
                 {posts.length === 0 ? (
                   <p>No matched result</p>
                 ) : (
-                  posts.map((post) => (
-                    <Protrait postId={post} key={post} jump={this.handleJump} />
-                  ))
+                  posts.map((post, index) => {
+                    if (index < (page - 1) * 10 || index > (page - 1) * 10 + 9)
+                      return null;
+                    return (
+                      <Protrait
+                        postId={post}
+                        key={post}
+                        jump={this.handleJump}
+                      />
+                    );
+                  })
                 )}
               </Card.Body>
               <Card.Footer className="text-center">
-                {this.state.loading ? (
-                  <Spinner animation="border" variant="primary" size="sm" />
-                ) : (
-                  // <Button
-                  //   size="sm"
-                  //   variant="outline-primary"
-                  //   onClick={this.loadMore}
-                  // >
-                  //   Load more
-                  // </Button>
-                  <></>
-                )}
+                <ButtonGroup size="sm">
+                  <Button
+                    name="prev"
+                    variant="outline-primary"
+                    onClick={this.handlePageChange}
+                  >
+                    Prev
+                  </Button>
+                  <Button>{page}</Button>
+                  <Button
+                    name="next"
+                    variant="outline-primary"
+                    onClick={this.handlePageChange}
+                  >
+                    Next
+                  </Button>
+                </ButtonGroup>
               </Card.Footer>
             </Card>
           </div>

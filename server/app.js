@@ -28,7 +28,18 @@ app.use(
       secret: process.env.SECRET,
       algorithms: ["HS256"],
     })
-    .unless({ path: [/\/user/, /\/post\/last/] })
+    .unless({
+      path: [
+        /\/user/,
+        /\/post\/last/,
+        /^\/post\/get\/\w+$/,
+        /^\/post\/query\/\w+$/,
+        /^\/content\/get\/\w+$/,
+        /^\/profile\/basic\/\w+$/,
+        /^\/profile\/getava\/\w+$/,
+        /^\/comment\/get\/\w+$/,
+      ],
+    })
 );
 
 mongoose.set("strictQuery", true);
@@ -143,9 +154,10 @@ app.post("/profile/avatar", upload.single("avatar"), (req, res) => {
         success: false,
         errno: "USERNOTFOUND",
       });
-    if(user.avatar) Avatar.deleteOne({ avatarId: user.avatar}, (err) => {
-      if(err) throw err
-    })
+    if (user.avatar)
+      Avatar.deleteOne({ avatarId: user.avatar }, (err) => {
+        if (err) throw err;
+      });
     const now = new Date();
     user.avatar = now;
     user.save((err) => {
@@ -164,16 +176,16 @@ app.post("/profile/avatar", upload.single("avatar"), (req, res) => {
   });
 });
 
-app.get('/profile/getava/:avatarId', (req, res) => {
-  const { avatarId } = req.params
+app.get("/profile/getava/:avatarId", (req, res) => {
+  const { avatarId } = req.params;
   Avatar.findOne({ avatarId: avatarId }, (err, avatar) => {
-    if(err) throw err
+    if (err) throw err;
     res.send({
       success: true,
-      avatar
-    })
-  })
-})
+      avatar,
+    });
+  });
+});
 
 // get full profile by jwt
 app.get("/profile/info", (req, res) => {
@@ -315,7 +327,6 @@ app.delete("/post/delete/:postId", (req, res) => {
 app.get("/post/last", (req, res) => {
   Post.find()
     .sort({ id: -1 })
-    .limit(5)
     .exec((err, posts) => {
       if (err) throw err;
       if (!posts)
@@ -332,6 +343,7 @@ app.get("/post/last", (req, res) => {
 
 // add a snippet/segment to post template
 app.post("/post/push", (req, res) => {
+  const { userId } = req.auth;
   const { postId, language, storage } = req.body;
   Post.findOne({ postId: postId }, (err, post) => {
     if (err) throw err;
@@ -339,6 +351,11 @@ app.post("/post/push", (req, res) => {
       return res.status(400).send({
         success: false,
         errno: "POSTNOTFOUND",
+      });
+    if (post.userId !== userId)
+      return res.send({
+        success: false,
+        errno: "AUTHORONLY",
       });
     let now = Date.now();
     new Content({
@@ -369,7 +386,6 @@ app.post("/post/update", (req, res) => {
         success: false,
         errno: "POSTNOTFOUND",
       });
-    // const originalContents = post.contents
     for (let id of post.contents) {
       if (!contentId.includes(id))
         Content.deleteOne({ contentId: id }, (err) => {
@@ -430,7 +446,6 @@ app.get("/post/get/:postId", (req, res) => {
         post,
         firstContent: content.storage,
         vote: vote,
-        userId,
         userId,
       });
     });

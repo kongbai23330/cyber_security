@@ -47,6 +47,7 @@ export default class Writer extends React.Component {
 
   handleNewPost = async () => {
     const { title, content } = this.state;
+    if(content.replace(/\s/g, "").length === 0) return alert('A post must have something as first chapter')
     const token = localStorage.getItem("token");
     const pro = await fetch(`http://127.0.0.1:3001/post/create`, {
       method: "POST",

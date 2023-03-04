@@ -43,6 +43,19 @@ export default class Post extends React.PureComponent {
   }
 
   componentDidMount = async () => {
+    const token = localStorage.getItem('token')
+    if(token) {
+      const pro = await fetch('http://localhost:3001/profile/info', {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        }
+      })
+      const res = await pro.json()
+      this.setState({
+        userId: res.userId
+      })
+    }
     this.fetchPostDetail();
   };
 
@@ -55,10 +68,8 @@ export default class Post extends React.PureComponent {
       },
       async () => {
         const { postId } = this.state;
-        const token = localStorage.getItem("token");
         const pro = await fetch(`http://localhost:3001/post/get/${postId}`, {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
@@ -69,7 +80,6 @@ export default class Post extends React.PureComponent {
           () => {
             return {
               title: title,
-              userId: res.userId,
               poster: userId,
               lastEdit: `${date.getFullYear()}/${
                 date.getMonth() + 1
@@ -109,7 +119,7 @@ export default class Post extends React.PureComponent {
     const { postId, userId, poster } = this.state;
     const { name } = e.target;
     const token = localStorage.getItem("token");
-    if (userId !== poster) return alert("You have no permission to do so");
+    if (userId !== poster  && name !== 'back') return alert("You have no permission to do so");
     if (name === "remove") {
       const pro = await fetch(`http://localhost:3001/post/delete/${postId}`, {
         method: "DELETE",
@@ -128,6 +138,7 @@ export default class Post extends React.PureComponent {
   };
 
   handleVote = async (e) => {
+    if(!localStorage.getItem('token')) return alert('You must login first')
     const { name } = e.target;
     let vote;
     if (name === "up") vote = true;
@@ -163,6 +174,7 @@ export default class Post extends React.PureComponent {
 
   handleNewRow = (e) => {
     const { name } = e.target;
+    if(!localStorage.getItem('token')) return alert('You must login first')
     if (name === "new-segment")
       this.setState({
         newRow: false,
