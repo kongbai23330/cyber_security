@@ -13,9 +13,8 @@ import { Navigate } from "react-router-dom";
 import Snippet from "./Snippet";
 import Segment from "./Segment";
 import Commenter from "./Commenter";
-
+import Author from "./Author";
 import { Divider } from "./Divider";
-import { Author } from "./Author";
 
 export default class Post extends React.PureComponent {
   constructor(props) {
@@ -33,7 +32,6 @@ export default class Post extends React.PureComponent {
       newContent: "",
 
       poster: null,
-      authorName: "",
       avatar: null,
 
       title: "Title",
@@ -45,19 +43,6 @@ export default class Post extends React.PureComponent {
   }
 
   componentDidMount = async () => {
-    const token = localStorage.getItem("token");
-    const pro = await fetch(`http://localhost:3001/profile/info`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    const res = await pro.json();
-    const { username, avatar } = res;
-    this.setState({
-      authorName: username,
-      avatar: avatar,
-    });
     this.fetchPostDetail();
   };
 
@@ -224,6 +209,7 @@ export default class Post extends React.PureComponent {
       this.setState({
         langauge: "raw",
         newContent: "",
+        newRow: null,
       });
       this.fetchPostDetail();
     }
@@ -235,7 +221,7 @@ export default class Post extends React.PureComponent {
       loading,
       modify,
       remove,
-      authorName,
+      poster,
       postId,
       title,
       lastEdit,
@@ -271,7 +257,7 @@ export default class Post extends React.PureComponent {
                 </Nav>
               </Card.Header>
               <Card.Body>
-                <Author author={authorName} avatar={null} />
+                {!loading && <Author authorId={poster} />}
                 <Divider />
                 <div className="post-rows">
                   {contents.map((content) => {
