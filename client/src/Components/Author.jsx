@@ -11,8 +11,8 @@ export const Author = (props) => {
         style={{ marginRight: "10px" }}
       />
       <div>
-        <span style={{ display: "block" }}>Author:</span>
-        <span style={{ display: "block" }}>{props.author}</span>
+        <span style={{ display: "block", fontSize: 16 }}>Author:</span>
+        <span style={{ display: "block", fontWeight: "bold" }}>{props.author}</span>
       </div>
     </div>
   );

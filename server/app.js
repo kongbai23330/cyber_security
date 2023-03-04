@@ -9,8 +9,10 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const expressJWT = require("express-jwt");
 const cors = require("cors");
+const multer = require("multer");
 
 const app = express();
+const upload = multer();
 
 app.use(cors({ origin: "*" }));
 app.use(logger("dev"));
@@ -39,6 +41,7 @@ const User = require("./model/User");
 const Post = require("./model/Post");
 const Content = require("./model/Content");
 const Comment = require("./model/Comment");
+const Avatar = require("./model/Avatar");
 
 // check is username already exists
 app.get("/user/validate/:username", (req, res) => {
@@ -130,8 +133,51 @@ app.post("/user/signin", (req, res) => {
   });
 });
 
+app.post("/profile/avatar", upload.single("avatar"), (req, res) => {
+  const { userId } = req.auth;
+  const { mimetype, buffer } = req.file;
+  User.findOne({ userId: userId }, (err, user) => {
+    if (err) throw err;
+    if (!user)
+      return res.status(404).send({
+        success: false,
+        errno: "USERNOTFOUND",
+      });
+    if(user.avatar) Avatar.deleteOne({ avatarId: user.avatar}, (err) => {
+      if(err) throw err
+    })
+    const now = new Date();
+    user.avatar = now;
+    user.save((err) => {
+      if (err) throw err;
+      new Avatar({
+        avatarId: now,
+        mimeType: mimetype,
+        buffer: buffer,
+      }).save((err) => {
+        if (err) throw err;
+        return res.send({
+          success: true,
+        });
+      });
+    });
+  });
+});
+
+app.get('/profile/getava/:avatarId', (req, res) => {
+  const { avatarId } = req.params
+  Avatar.findOne({ avatarId: avatarId }, (err, avatar) => {
+    if(err) throw err
+    res.send({
+      success: true,
+      avatar
+    })
+  })
+})
+
+// get full profile by jwt
 app.get("/profile/info", (req, res) => {
-  const { userId, username } = req.auth;
+  const { userId } = req.auth;
   User.findOne({ userId: userId }, (err, user) => {
     if (err) throw err;
     if (!user)
@@ -141,7 +187,7 @@ app.get("/profile/info", (req, res) => {
       });
     return res.send({
       success: true,
-      username,
+      username: user.username,
       avatar: user.avatar,
       bio: user.bio,
       userId: userId,
@@ -149,6 +195,25 @@ app.get("/profile/info", (req, res) => {
   });
 });
 
+// get user's basic info by id
+app.get("/profile/basic/:userId", (req, res) => {
+  const { userId } = req.params;
+  User.findOne({ userId: userId }, (err, user) => {
+    if (err) throw err;
+    if (!user)
+      return res.status(404).send({
+        success: false,
+        errno: "USERNOTFOUND",
+      });
+    return res.send({
+      success: true,
+      username: user.username,
+      avatar: user.avatar,
+    });
+  });
+});
+
+// update a user's profile
 app.post("/profile/update", (req, res) => {
   const { userId } = req.auth;
   const { username, bio } = req.body;
@@ -161,11 +226,10 @@ app.post("/profile/update", (req, res) => {
       });
     user.username = username;
     user.bio = bio;
-    user.save((err, update) => {
+    user.save((err) => {
       if (err) throw err;
       return res.send({
         success: true,
-        update,
       });
     });
   });
@@ -212,6 +276,7 @@ app.post("/post/create", (req, res) => {
   });
 });
 
+// delete a post with id
 app.delete("/post/delete/:postId", (req, res) => {
   const { userId } = req.auth;
   const { postId } = req.params;
@@ -283,9 +348,9 @@ app.post("/post/push", (req, res) => {
     }).save((err) => {
       if (err) throw err;
       post.contents.push(now);
-      post.lastEdit = now
+      post.lastEdit = now;
       post.save((err) => {
-        if(err) throw err
+        if (err) throw err;
         res.status(201).send({
           success: true,
         });
@@ -294,6 +359,7 @@ app.post("/post/push", (req, res) => {
   });
 });
 
+// update a post after modification
 app.post("/post/update", (req, res) => {
   const { postId, contentId, contents } = req.body;
   Post.findOne({ postId: postId }, (err, post) => {
@@ -310,23 +376,23 @@ app.post("/post/update", (req, res) => {
           if (err) throw err;
         });
     }
-    post.contents = contentId
+    post.contents = contentId;
     post.save((err) => {
-      if(err) throw err
-      for(let content of contents) {
+      if (err) throw err;
+      for (let content of contents) {
         Content.findOne({ contentId: content.contentId }, (err, match) => {
-          if(err) throw err
-          match.language = content.language
-          match.storage = content.storage
+          if (err) throw err;
+          match.language = content.language;
+          match.storage = content.storage;
           match.save((err) => {
-            if(err) throw err
-          })
-        })
+            if (err) throw err;
+          });
+        });
       }
       res.send({
-        success: true
-      })
-    })
+        success: true,
+      });
+    });
   });
 });
 
@@ -342,6 +408,7 @@ app.get("/post/query/:title", (req, res) => {
   });
 });
 
+// get a post deatil with id
 app.get("/post/get/:postId", (req, res) => {
   let userId, vote;
   if (req.auth) userId = req.auth.userId;
@@ -363,12 +430,14 @@ app.get("/post/get/:postId", (req, res) => {
         post,
         firstContent: content.storage,
         vote: vote,
-        userId, userId
+        userId,
+        userId,
       });
     });
   });
 });
 
+// vote for a post
 app.post("/post/vote", (req, res) => {
   const { userId } = req.auth;
   const { postId, vote } = req.body;
@@ -424,7 +493,7 @@ app.get("/content/get/:id", (req, res) => {
 
 // write a comment
 app.post("/comment/write", (req, res) => {
-  const { userId } = req.auth
+  const { userId } = req.auth;
   const { postId, content } = req.body;
   User.findOne({ userId: userId }, (err, user) => {
     if (err) throw err;
@@ -440,7 +509,7 @@ app.post("/comment/write", (req, res) => {
           success: false,
           errno: "POSTNOTFOUND",
         });
-      let now = Date.now();
+      const now = Date.now();
       new Comment({
         commentId: now,
         userId: userId,
@@ -449,31 +518,33 @@ app.post("/comment/write", (req, res) => {
         lastEdit: now,
       }).save((err) => {
         if (err) throw err;
-        post.comments.push(now)
+        post.comments.push(now);
         post.save((err) => {
-          if(err) throw err
+          if (err) throw err;
           return res.status(201).send({
             success: true,
           });
-        })
+        });
       });
     });
   });
 });
 
-app.get('/comment/get/:commentId', (req, res) => {
-  const { commentId } = req.params
+// get a comment detail with id
+app.get("/comment/get/:commentId", (req, res) => {
+  const { commentId } = req.params;
   Comment.findOne({ commentId: commentId }, (err, comment) => {
-    if(err) throw err
-    if(!comment) return res.status(404).send({
-      success: false,
-      errno: 'COMTNOTFOUND'
-    })
+    if (err) throw err;
+    if (!comment)
+      return res.status(404).send({
+        success: false,
+        errno: "COMTNOTFOUND",
+      });
     res.send({
       success: true,
-      comment
-    })
-  })
-})
+      comment,
+    });
+  });
+});
 
 module.exports = app;

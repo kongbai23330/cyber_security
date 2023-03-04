@@ -7,7 +7,7 @@ import {
   CloseButton,
   Form,
   ButtonGroup,
-  Figure
+  Figure,
 } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import Snippet from "./Snippet";
@@ -23,7 +23,6 @@ export default class Post extends React.PureComponent {
     this.state = {
       loading: true,
       postId: null,
-      poster: null,
       userId: null,
       vote: null,
       back: false,
@@ -32,6 +31,10 @@ export default class Post extends React.PureComponent {
       newRow: null,
       language: "raw",
       newContent: "",
+
+      poster: null,
+      authorName: "",
+      avatar: null,
 
       title: "Title",
       lastEdit: "2023/02/14 16:23",
@@ -42,6 +45,19 @@ export default class Post extends React.PureComponent {
   }
 
   componentDidMount = async () => {
+    const token = localStorage.getItem("token");
+    const pro = await fetch(`http://localhost:3001/profile/info`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const res = await pro.json();
+    const { username, avatar } = res;
+    this.setState({
+      authorName: username,
+      avatar: avatar,
+    });
     this.fetchPostDetail();
   };
 
@@ -219,7 +235,7 @@ export default class Post extends React.PureComponent {
       loading,
       modify,
       remove,
-      poster,
+      authorName,
       postId,
       title,
       lastEdit,
@@ -255,7 +271,7 @@ export default class Post extends React.PureComponent {
                 </Nav>
               </Card.Header>
               <Card.Body>
-                <Author author={poster} />
+                <Author author={authorName} avatar={null} />
                 <Divider />
                 <div className="post-rows">
                   {contents.map((content) => {
@@ -357,10 +373,10 @@ export default class Post extends React.PureComponent {
                       </ButtonGroup>
                     </div>
                   )}
+                  <Divider />
+                  {!loading && <Commenter postId={postId} />}
                 </div>
-                <Divider />
               </Card.Body>
-              {!loading && <Commenter postId={postId} />}
               <Card.Footer></Card.Footer>
             </Card>
           </div>
