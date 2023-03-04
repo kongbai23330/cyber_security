@@ -59,7 +59,7 @@ export default class Index extends React.Component {
     let url,
       search = title.replace(/\s/g, "");
     if (!search) url = "http://localhost:3001/post/last";
-    else url = "http://localhost:3001/post/query/" + search;
+    else url = `http://localhost:3001/post/query/${search}`;
     const pro = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,

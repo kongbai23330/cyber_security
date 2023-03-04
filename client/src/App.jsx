@@ -7,6 +7,9 @@ import Index from "./Components/Index";
 import Profile from "./Components/Profile";
 import Post from "./Components/Post";
 import Signer from "./Components/Signer";
+import Writer from "./Components/Writer";
+import Modifier from "./Components/Modifier";
+import { P404 } from "./Components/404"
 
 class App extends React.Component {
   constructor(props) {
@@ -68,9 +71,10 @@ class App extends React.Component {
             <Route path="/" exact element={<Index />} />
             <Route path="/sign" element={<Signer updateBasic={this.updateBasic} />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/post/add/:title" element={<Writer />} />
             <Route path="/post/:postid" element={<Post />} />
-            <Route path="/post/add/:title" element={<p>muli</p>} />
-            <Route path="*" element={<h1>404: NOT THE PAGE YOU ARE LOOKING FOR</h1>} />
+            <Route path="/post/modify/:postid" element={<Modifier />} />
+            <Route path="*" element={<P404 />} />
           </Routes>
         </Router>
       </>

@@ -7,10 +7,15 @@ import {
   CloseButton,
   Form,
   ButtonGroup,
+  Figure
 } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import Snippet from "./Snippet";
 import Segment from "./Segment";
+import Commenter from "./Commenter";
+
+import { Divider } from "./Divider";
+import { Author } from "./Author";
 
 export default class Post extends React.PureComponent {
   constructor(props) {
@@ -18,8 +23,12 @@ export default class Post extends React.PureComponent {
     this.state = {
       loading: true,
       postId: null,
+      poster: null,
+      userId: null,
       vote: null,
       back: false,
+      modify: false,
+      remove: false,
       newRow: null,
       language: "raw",
       newContent: "",
@@ -33,6 +42,10 @@ export default class Post extends React.PureComponent {
   }
 
   componentDidMount = async () => {
+    this.fetchPostDetail();
+  };
+
+  fetchPostDetail = async () => {
     this.setState(
       () => {
         return {
@@ -42,19 +55,21 @@ export default class Post extends React.PureComponent {
       async () => {
         const { postId } = this.state;
         const token = localStorage.getItem("token");
-        const pro = await fetch(`http://127.0.0.1:3001/post/get/${postId}`, {
+        const pro = await fetch(`http://localhost:3001/post/get/${postId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
         const res = await pro.json();
-        const { title, lastEdit, ups, downs } = res.post;
+        const { title, userId, lastEdit, ups, downs } = res.post;
         const date = new Date(lastEdit);
         this.setState(
           () => {
             return {
               title: title,
+              userId: res.userId,
+              poster: userId,
               lastEdit: `${date.getFullYear()}/${
                 date.getMonth() + 1
               }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`,
@@ -68,7 +83,7 @@ export default class Post extends React.PureComponent {
             for (let i of res.post.contents) {
               const token = localStorage.getItem("token");
               const pro = await fetch(
-                `http://127.0.0.1:3001/content/get/${i}`,
+                `http://localhost:3001/content/get/${i}`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -81,6 +96,7 @@ export default class Post extends React.PureComponent {
             }
             this.setState({
               contents: bucket,
+              loading: false,
             });
           }
         );
@@ -88,9 +104,25 @@ export default class Post extends React.PureComponent {
     );
   };
 
-  handleBack = () => {
+  handleClick = async (e) => {
+    const { postId, userId, poster } = this.state;
+    const { name } = e.target;
+    const token = localStorage.getItem("token");
+    if (userId !== poster) return alert("You have no permission to do so");
+    if (name === "remove") {
+      const pro = await fetch(`http://localhost:3001/post/delete/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const res = await pro.json();
+      if (res.success) alert("Post deleted");
+      else return alert(res.errno);
+    }
     this.setState({
-      back: true,
+      [name]: true,
     });
   };
 
@@ -101,7 +133,7 @@ export default class Post extends React.PureComponent {
     else vote = false;
     const { postId, ups, downs } = this.state;
     const token = localStorage.getItem("token");
-    const pro = await fetch(`http://localhost:3001/post/vote`, {
+    const pro = await fetch("http://localhost:3001/post/vote", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -109,7 +141,7 @@ export default class Post extends React.PureComponent {
       },
       body: JSON.stringify({
         postId: postId,
-        vote: true,
+        vote: vote,
       }),
     });
     const res = await pro.json();
@@ -177,12 +209,18 @@ export default class Post extends React.PureComponent {
         langauge: "raw",
         newContent: "",
       });
+      this.fetchPostDetail();
     }
   };
 
   render() {
     const {
       back,
+      loading,
+      modify,
+      remove,
+      poster,
+      postId,
       title,
       lastEdit,
       ups,
@@ -195,16 +233,17 @@ export default class Post extends React.PureComponent {
     } = this.state;
     return (
       <>
-        {back ? (
-          <Navigate to="/" />
-        ) : (
+        {back && <Navigate to="/" />}
+        {modify && <Navigate to={`/post/modify/${postId}`} />}
+        {remove && <Navigate to="/" />}
+        <>
           <div className="main-panel">
             <Card>
               <Card.Header>
                 <Nav>
                   <Nav.Item>
                     <ButtonGroup size="sm" id="btn-back">
-                      <CloseButton onClick={this.handleBack} />
+                      <CloseButton name="back" onClick={this.handleClick} />
                     </ButtonGroup>
                   </Nav.Item>
                   <Nav.Item className="ms-auto post-title">{title}</Nav.Item>
@@ -216,6 +255,8 @@ export default class Post extends React.PureComponent {
                 </Nav>
               </Card.Header>
               <Card.Body>
+                <Author author={poster} />
+                <Divider />
                 <div className="post-rows">
                   {contents.map((content) => {
                     if (content.language === "raw")
@@ -317,55 +358,73 @@ export default class Post extends React.PureComponent {
                     </div>
                   )}
                 </div>
+                <Divider />
               </Card.Body>
+              {!loading && <Commenter postId={postId} />}
               <Card.Footer></Card.Footer>
             </Card>
           </div>
-        )}
-        <div className="vote">
-          <ButtonGroup>
-            {vote === null && (
-              <>
-                <Button
-                  size="sm"
-                  variant="outline-primary"
-                  name="up"
-                  onClick={this.handleVote}
-                >
-                  {ups}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline-primary"
-                  name="down"
-                  onClick={this.handleVote}
-                >
-                  {downs}
-                </Button>
-              </>
-            )}
-            {vote === true && (
-              <>
-                <Button size="sm" name="up">
-                  {ups}
-                </Button>
-                <Button size="sm" variant="outline-primary" name="down">
-                  {downs}
-                </Button>
-              </>
-            )}
-            {vote === false && (
-              <>
-                <Button size="sm" variant="outline-primary" name="up">
-                  {ups}
-                </Button>
-                <Button size="sm" name="down">
-                  {downs}
-                </Button>
-              </>
-            )}
-          </ButtonGroup>
-        </div>
+          <div className="float-post">
+            <ButtonGroup>
+              {vote === null && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    name="up"
+                    onClick={this.handleVote}
+                  >
+                    {ups}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    name="down"
+                    onClick={this.handleVote}
+                  >
+                    {downs}
+                  </Button>
+                </>
+              )}
+              {vote === true && (
+                <>
+                  <Button size="sm" name="up">
+                    {ups}
+                  </Button>
+                  <Button size="sm" variant="outline-primary" name="down">
+                    {downs}
+                  </Button>
+                </>
+              )}
+              {vote === false && (
+                <>
+                  <Button size="sm" variant="outline-primary" name="up">
+                    {ups}
+                  </Button>
+                  <Button size="sm" name="down">
+                    {downs}
+                  </Button>
+                </>
+              )}
+            </ButtonGroup>{" "}
+            <ButtonGroup size="sm">
+              <Button
+                variant="outline-warning"
+                name="modify"
+                onClick={this.handleClick}
+              >
+                Modify
+              </Button>
+              <Button
+                variant="outline-danger"
+                name="remove"
+                onClick={this.handleClick}
+              >
+                Delete
+              </Button>
+            </ButtonGroup>
+          </div>
+        </>
       </>
     );
   }

@@ -173,12 +173,13 @@ app.post("/profile/update", (req, res) => {
 
 // create a post with empty template
 app.post("/post/create", (req, res) => {
-  const { userId } = req.auth
+  const { userId } = req.auth;
   const { title, firstContent } = req.body;
-  if(!title || !firstContent) return res.status(403).send({
-    success: false,
-    errno: 'INFOMISSING'
-  })
+  if (!title || !firstContent)
+    return res.status(403).send({
+      success: false,
+      errno: "INFOMISSING",
+    });
   User.findOne({ userId: userId }, (err, user) => {
     if (err) throw err;
     if (!user)
@@ -189,10 +190,10 @@ app.post("/post/create", (req, res) => {
     let now = Date.now();
     new Content({
       contentId: now,
-      language: 'raw',
-      storage: firstContent
+      language: "raw",
+      storage: firstContent,
     }).save((err) => {
-      if(err) throw err
+      if (err) throw err;
       new Post({
         postId: now,
         userId: userId,
@@ -207,7 +208,41 @@ app.post("/post/create", (req, res) => {
           success: true,
         });
       });
-    })
+    });
+  });
+});
+
+app.delete("/post/delete/:postId", (req, res) => {
+  const { userId } = req.auth;
+  const { postId } = req.params;
+  Post.findOne({ postId: postId }, (err, post) => {
+    if (err) throw err;
+    if (!post)
+      return res.status(403).send({
+        success: false,
+        errno: "POSTNOTFOUND",
+      });
+    if (post.userId !== userId)
+      return res.status(403).send({
+        success: false,
+        errno: "USERNOTMATCH",
+      });
+    post.contents.map((contentId) =>
+      Content.deleteOne({ contentId: contentId }, (err) => {
+        if (err) throw err;
+      })
+    );
+    post.comments.map((commentId) =>
+      Comment.deleteOne({ commentId: commentId }, (err) => {
+        if (err) throw err;
+      })
+    );
+    Post.deleteOne({ postId: postId }, (err) => {
+      if (err) throw err;
+      res.send({
+        success: true,
+      });
+    });
   });
 });
 
@@ -248,11 +283,50 @@ app.post("/post/push", (req, res) => {
     }).save((err) => {
       if (err) throw err;
       post.contents.push(now);
-      post.save();
-      res.status(201).send({
-        success: true,
+      post.lastEdit = now
+      post.save((err) => {
+        if(err) throw err
+        res.status(201).send({
+          success: true,
+        });
       });
     });
+  });
+});
+
+app.post("/post/update", (req, res) => {
+  const { postId, contentId, contents } = req.body;
+  Post.findOne({ postId: postId }, (err, post) => {
+    if (err) throw err;
+    if (!post)
+      return res.status(404).send({
+        success: false,
+        errno: "POSTNOTFOUND",
+      });
+    // const originalContents = post.contents
+    for (let id of post.contents) {
+      if (!contentId.includes(id))
+        Content.deleteOne({ contentId: id }, (err) => {
+          if (err) throw err;
+        });
+    }
+    post.contents = contentId
+    post.save((err) => {
+      if(err) throw err
+      for(let content of contents) {
+        Content.findOne({ contentId: content.contentId }, (err, match) => {
+          if(err) throw err
+          match.language = content.language
+          match.storage = content.storage
+          match.save((err) => {
+            if(err) throw err
+          })
+        })
+      }
+      res.send({
+        success: true
+      })
+    })
   });
 });
 
@@ -269,8 +343,8 @@ app.get("/post/query/:title", (req, res) => {
 });
 
 app.get("/post/get/:postId", (req, res) => {
-  let userId, vote
-  if(req.auth) userId = req.auth.userId
+  let userId, vote;
+  if (req.auth) userId = req.auth.userId;
   const { postId } = req.params;
   Post.findOne({ postId: postId }, (err, post) => {
     if (err) throw err;
@@ -280,17 +354,18 @@ app.get("/post/get/:postId", (req, res) => {
         errno: "IDINVALID",
       });
     Content.findOne({ contentId: post.contents[0] }, (err, content) => {
-      if(err) throw err
-      if(post.ups.includes(userId)) vote = true;
-      else if(post.downs.includes(userId)) vote = false
-      else vote = null
+      if (err) throw err;
+      if (post.ups.includes(userId)) vote = true;
+      else if (post.downs.includes(userId)) vote = false;
+      else vote = null;
       return res.send({
         success: true,
         post,
         firstContent: content.storage,
-        vote: vote
+        vote: vote,
+        userId, userId
       });
-    })
+    });
   });
 });
 
@@ -348,37 +423,57 @@ app.get("/content/get/:id", (req, res) => {
 });
 
 // write a comment
-// app.post("/comment/write", (req, res) => {
-//   const { userId, postId, content } = req.body;
-//   User.findOne({ userId: userId }, (err, user) => {
-//     if (err) throw err;
-//     if (!user)
-//       return res.status(401).send({
-//         success: false,
-//         errno: "USERNOTFOUND",
-//       });
-//     Post.findOne({ postId: postId }, (err, post) => {
-//       if (err) throw err;
-//       if (!post)
-//         return res.status(401).send({
-//           success: false,
-//           errno: "POSTNOTFOUND",
-//         });
-//       let now = Date.now();
-//       new Comment({
-//         commentId: now,
-//         userId: userId,
-//         postId: postId,
-//         content: content,
-//         lastEdit: now,
-//       }).save((err) => {
-//         if (err) throw err;
-//         return res.status(201).send({
-//           success: true,
-//         });
-//       });
-//     });
-//   });
-// });
+app.post("/comment/write", (req, res) => {
+  const { userId } = req.auth
+  const { postId, content } = req.body;
+  User.findOne({ userId: userId }, (err, user) => {
+    if (err) throw err;
+    if (!user)
+      return res.status(401).send({
+        success: false,
+        errno: "USERNOTFOUND",
+      });
+    Post.findOne({ postId: postId }, (err, post) => {
+      if (err) throw err;
+      if (!post)
+        return res.status(401).send({
+          success: false,
+          errno: "POSTNOTFOUND",
+        });
+      let now = Date.now();
+      new Comment({
+        commentId: now,
+        userId: userId,
+        postId: postId,
+        content: content,
+        lastEdit: now,
+      }).save((err) => {
+        if (err) throw err;
+        post.comments.push(now)
+        post.save((err) => {
+          if(err) throw err
+          return res.status(201).send({
+            success: true,
+          });
+        })
+      });
+    });
+  });
+});
+
+app.get('/comment/get/:commentId', (req, res) => {
+  const { commentId } = req.params
+  Comment.findOne({ commentId: commentId }, (err, comment) => {
+    if(err) throw err
+    if(!comment) return res.status(404).send({
+      success: false,
+      errno: 'COMTNOTFOUND'
+    })
+    res.send({
+      success: true,
+      comment
+    })
+  })
+})
 
 module.exports = app;

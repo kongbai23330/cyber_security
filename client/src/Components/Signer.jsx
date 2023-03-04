@@ -137,6 +137,7 @@ export default class Signer extends React.Component {
                       </InputGroup.Text>
                       <Form.Control
                         as="textarea"
+                        rows={1}
                         name="bio"
                         value={bio}
                         placeholder="Shortly decribe yourself.."
