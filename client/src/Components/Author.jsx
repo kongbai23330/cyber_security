@@ -74,7 +74,7 @@ export default class Author extends React.Component {
         {/* Render the author's username */}
         <div>
           <span style={{ display: "block", fontSize: 16 }}>Author:</span>
-          <span style={{ display: "block", fontWeight: "bold" }}>
+          <span id="author" style={{ display: "block", fontWeight: "bold" }}>
             {this.state.author}
           </span>
         </div>

@@ -133,17 +133,20 @@ export default class Signer extends React.Component {
                   <>
                     <InputGroup size="sm">
                       <Form.Control
+                        id="username"
                         value={username}
                         placeholder="Username"
                         disabled
                       />
                       <Form.Control
+                        id="password"
                         type="password"
                         value={password}
                         placeholder="Password"
                         disabled
                       />
                       <Button
+                        id="signup"
                         variant="outline-primary"
                         onClick={this.postSignUp}
                       >
@@ -180,6 +183,7 @@ export default class Signer extends React.Component {
                   <>
                     <InputGroup size="sm">
                       <Form.Control
+                        id="username"
                         name="username"
                         value={username}
                         onChange={this.handleChange}
@@ -187,6 +191,7 @@ export default class Signer extends React.Component {
                         autoComplete="off"
                       />
                       <Form.Control
+                        id="password"
                         type="password"
                         name="password"
                         value={password}
@@ -194,12 +199,14 @@ export default class Signer extends React.Component {
                         placeholder="Password"
                       />
                       <Button
+                        id="signin"
                         variant="outline-primary"
                         onClick={this.handleSignIn}
                       >
                         Sign In
                       </Button>
                       <Button
+                        id="signup"
                         variant="outline-primary"
                         onClick={this.renderSignUp}
                       >

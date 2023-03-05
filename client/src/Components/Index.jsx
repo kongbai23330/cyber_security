@@ -112,6 +112,7 @@ export default class Index extends React.Component {
               <Card.Header>
                 <InputGroup size="sm">
                   <Form.Control
+                    id="title"
                     placeholder="Enter a post title..."
                     name="title"
                     value={title}
@@ -119,6 +120,7 @@ export default class Index extends React.Component {
                     autoComplete="off"
                   ></Form.Control>
                   <Button
+                    id="search"
                     variant="outline-primary"
                     onClick={this.searchOnClick}
                   >
@@ -133,7 +135,11 @@ export default class Index extends React.Component {
                       <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
                     </svg>
                   </Button>
-                  <Button variant="outline-primary" onClick={this.handleAdd}>
+                  <Button
+                    variant="outline-primary"
+                    id="newpost"
+                    onClick={this.handleAdd}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
@@ -151,7 +157,7 @@ export default class Index extends React.Component {
               <Card.Body>
                 {/* if no post exists */}
                 {posts.length === 0 ? (
-                  <p>No matched result</p>
+                  <p id="no-res">No matched result</p>
                 ) : (
                   posts.map((post, index) => {
                     // only render posts in the page area
@@ -159,6 +165,7 @@ export default class Index extends React.Component {
                       return null;
                     return (
                       <Protrait
+                        id={post}
                         postId={post}
                         key={post}
                         jump={this.handleJump}
@@ -171,6 +178,7 @@ export default class Index extends React.Component {
                 {/* pager */}
                 <ButtonGroup size="sm">
                   <Button
+                    id="prev"
                     name="prev"
                     variant="outline-primary"
                     onClick={this.handlePageChange}
@@ -182,6 +190,7 @@ export default class Index extends React.Component {
                       fill="currentColor"
                       className="bi bi-caret-left"
                       viewBox="0 0 16 16"
+                      style={{ pointerEvents: "none" }}
                     >
                       <path d="M10 12.796V3.204L4.519 8 10 12.796zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753z" />
                     </svg>
@@ -190,6 +199,7 @@ export default class Index extends React.Component {
                     {page}
                   </Button>
                   <Button
+                    id="next"
                     name="next"
                     variant="outline-primary"
                     onClick={this.handlePageChange}
@@ -201,6 +211,7 @@ export default class Index extends React.Component {
                       fill="currentColor"
                       className="bi bi-caret-right"
                       viewBox="0 0 16 16"
+                      style={{ pointerEvents: "none" }}
                     >
                       <path d="M6 12.796V3.204L11.481 8 6 12.796zm.659.753 5.48-4.796a1 1 0 0 0 0-1.506L6.66 2.451C6.011 1.885 5 2.345 5 3.204v9.592a1 1 0 0 0 1.659.753z" />
                     </svg>

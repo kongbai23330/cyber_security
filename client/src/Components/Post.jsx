@@ -563,6 +563,7 @@ export default class Post extends React.PureComponent {
             </ButtonGroup>{" "}
             <ButtonGroup size="sm">
               <Button
+                id="modify"
                 variant="outline-warning"
                 name="modify"
                 onClick={this.handleClick}
@@ -584,6 +585,7 @@ export default class Post extends React.PureComponent {
                 </svg>
               </Button>
               <Button
+                id="remove"
                 variant="outline-danger"
                 name="remove"
                 onClick={this.handleClick}
