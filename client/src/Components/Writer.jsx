@@ -89,7 +89,7 @@ export default class Writer extends React.Component {
                         <CloseButton onClick={this.handleBack} />
                       </ButtonGroup>
                     </Nav.Item>
-                    <Nav.Item className="ms-auto post-title">{title}</Nav.Item>
+                    <Nav.Item className="ms-auto post-title">{decodeURI(title)}</Nav.Item>
                     <Nav.Item className="ms-auto post-timestamp">
                       {"Now:\n"}
                       <br />

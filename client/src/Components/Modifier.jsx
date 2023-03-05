@@ -170,7 +170,7 @@ export default class Modify extends React.Component {
                     <CloseButton name="back" onClick={this.handleBack} />
                   </ButtonGroup>
                 </Nav.Item>
-                <Nav.Item className="ms-auto post-title">{title}</Nav.Item>
+                <Nav.Item className="ms-auto post-title">{decodeURI(title)}</Nav.Item>
                 <Nav.Item className="ms-auto post-timestamp">
                   {"Now:"}
                   <br />
