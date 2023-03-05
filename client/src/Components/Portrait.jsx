@@ -46,7 +46,7 @@ export default class Protrait extends React.Component {
               paddingLeft: 15,
             }}
           >
-            {title}
+            {decodeURI(title)}
           </Card.Header>
           <Card.Body
             className="portrait-body"
@@ -57,7 +57,7 @@ export default class Protrait extends React.Component {
               paddingLeft: 10,
             }}
           >
-            {firstContent}
+            {decodeURI(firstContent)}
           </Card.Body>
         </Card>
       </div>

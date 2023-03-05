@@ -16,7 +16,7 @@ export default class Writer extends React.Component {
     this.state = {
       back: false,
       title: "",
-      content: '',
+      content: "",
       now: "",
     };
   }
@@ -47,7 +47,8 @@ export default class Writer extends React.Component {
 
   handleNewPost = async () => {
     const { title, content } = this.state;
-    if(content.replace(/\s/g, "").length === 0) return alert('A post must have something as first chapter')
+    if (content.replace(/\s/g, "").length === 0)
+      return alert("A post must have something as first chapter");
     const token = localStorage.getItem("token");
     const pro = await fetch(`http://127.0.0.1:3001/post/create`, {
       method: "POST",
@@ -57,14 +58,14 @@ export default class Writer extends React.Component {
       },
       body: JSON.stringify({
         title: title,
-        firstContent: content
+        firstContent: content,
       }),
     });
     const res = await pro.json();
-    if(res.success) alert('Post Created')
+    if (res.success) alert("Post Created");
     this.setState({
-      back: true
-    })
+      back: true,
+    });
   };
 
   render() {
@@ -98,14 +99,28 @@ export default class Writer extends React.Component {
                     name="content"
                     rows={15}
                     placeholder={`First chapter of your post\nIt can be a short description...`}
+                    style={{ fontSize: 16 }}
                     onChange={this.handleChange}
                   ></Form.Control>
                 </Card.Body>
               </Card>
             </div>
             <div className="float-submit">
-              <Button variant="outline-primary" size="sm" onClick={this.handleNewPost}>
-                Submit
+              <Button
+                variant="outline-success"
+                size="sm"
+                onClick={this.handleNewPost}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  className="bi bi-send"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z" />
+                </svg>
               </Button>
             </div>
           </>

