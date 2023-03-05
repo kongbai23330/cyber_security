@@ -1,9 +1,9 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import { Card, Button, Form, InputGroup, ButtonGroup } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import Protrait from "./Portrait";
 
+// index page of the app
 export default class Index extends React.Component {
   constructor(props) {
     super(props);
@@ -16,6 +16,7 @@ export default class Index extends React.Component {
     };
   }
 
+  // fetch for existing posts
   componentDidMount = async () => {
     const token = localStorage.getItem("token");
     const pro = await fetch("http://localhost:3001/post/last", {
@@ -25,6 +26,8 @@ export default class Index extends React.Component {
       },
     });
     const res = await pro.json();
+    // for each post only load postId for futher info fetching
+    // return a list of postIds
     this.setState({
       posts: res.posts.map((post) => post.postId),
     });
@@ -37,12 +40,16 @@ export default class Index extends React.Component {
     });
   };
 
+  // handle searching
   searchOnClick = async () => {
     const { title } = this.state;
     const token = localStorage.getItem("token");
+    // ensure not error if user only input whitespace
     let url,
       search = title.replace(/\s/g, "");
+    // if input is empty or only have white space reload all posts
     if (!search) url = "http://localhost:3001/post/last";
+    // otherwise fetch for matched posts
     else url = `http://localhost:3001/post/query/${search}`;
     const pro = await fetch(url, {
       headers: {
@@ -57,6 +64,7 @@ export default class Index extends React.Component {
     });
   };
 
+  // handle page jump, some check login
   handleJump = (postId) => {
     this.setState({
       jump: postId,
@@ -73,6 +81,7 @@ export default class Index extends React.Component {
     else alert("Title is required");
   };
 
+  // calculate for page range, prevent user operation if page < 1 or > last page
   handlePageChange = (e) => {
     const { page, posts } = this.state;
     const { name } = e.target;
@@ -94,6 +103,7 @@ export default class Index extends React.Component {
     const { posts, title, jump, add, page } = this.state;
     return (
       <>
+        {/* redirecting to other pages */}
         {jump && <Navigate to={`/post/${jump}`} />}
         {add && <Navigate to={`/post/add/${title}`} />}
         <>
@@ -139,10 +149,12 @@ export default class Index extends React.Component {
                 </InputGroup>
               </Card.Header>
               <Card.Body>
+                {/* if no post exists */}
                 {posts.length === 0 ? (
                   <p>No matched result</p>
                 ) : (
                   posts.map((post, index) => {
+                    // only render posts in the page area
                     if (index < (page - 1) * 10 || index > (page - 1) * 10 + 9)
                       return null;
                     return (
@@ -156,6 +168,7 @@ export default class Index extends React.Component {
                 )}
               </Card.Body>
               <Card.Footer className="text-center">
+                {/* pager */}
                 <ButtonGroup size="sm">
                   <Button
                     name="prev"
@@ -173,7 +186,9 @@ export default class Index extends React.Component {
                       <path d="M10 12.796V3.204L4.519 8 10 12.796zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753z" />
                     </svg>
                   </Button>
-                  <Button variant="outline-primary" disabled>{page}</Button>
+                  <Button variant="outline-primary" disabled>
+                    {page}
+                  </Button>
                   <Button
                     name="next"
                     variant="outline-primary"

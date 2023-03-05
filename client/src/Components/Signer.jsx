@@ -1,8 +1,8 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import { Card, Form, Button, InputGroup } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 
+// render login and signup page
 export default class Signer extends React.Component {
   constructor(props) {
     super(props);
@@ -18,18 +18,30 @@ export default class Signer extends React.Component {
 
   renderSignUp = async () => {
     const { username, password } = this.state;
+    // Check if the entered username has at least 6 characters; if not, display an error message and return
     if (username.length < 6) return alert("Username at least 6 characters");
+    // Check if the entered password meets the following criteria:
+    // - Has at least 8 characters
+    // - Contains at least one lowercase letter
+    // - Contains at least one uppercase letter
+    // - Contains at least one digit
+    // - Contains at least one special character
+    // If not, display an error message and return
     if (
       password.length < 8 ||
       !/[a-z]/.test(password) ||
       !/[A-Z]/.test(password) ||
       !/[0-9]/.test(password) ||
-      !/[~`!@#$%^&*()-_+={}[]|\\;:"<>,\.\/\?]/.test(password)
-    )
+      !/[~`!@#$%^&*()-_+={}[\]|\\;:"<>,./?]/.test(password)
+    ) {
       return alert("Password not strong enough");
+    }
+    // Send a GET request to the server to check if the entered username already exists
     const pro = await fetch("http://localhost:3001/user/validate/" + username);
     const res = await pro.json();
+    // If the server indicates that the username already exists, display an error message and return
     if (res.exists) return alert("Username already exists");
+    // If all validations pass, update the component's state to indicate that the user is signing up
     this.setState({
       signUp: true,
     });
@@ -43,13 +55,16 @@ export default class Signer extends React.Component {
   };
 
   postSignUp = async () => {
+    // Destructure the 'username', 'password', 'bio', and 'confirm' values from the component's state object
     const { username, password, bio, confirm } = this.state;
+    // Check if the entered password matches the 'confirm' field; if not, display an error message, update the state, and return
     if (password !== confirm) {
       this.setState({
         signUp: false,
       });
       return alert("Repeated password not match");
     }
+    // Send a POST request to the server to create a new user account with the entered information
     const pro = await fetch("http://localhost:3001/user/signup/", {
       method: "POST",
       headers: {
@@ -62,7 +77,9 @@ export default class Signer extends React.Component {
       }),
     });
     const res = await pro.json();
+    // If the server indicates that the account creation was unsuccessful, display an error message and return
     if (!res.success) return alert("Something went wrong");
+    // If the account creation was successful, update the component's state to indicate that the user is no longer signing up, display a success message, and return
     this.setState({
       signUp: false,
     });
@@ -70,6 +87,7 @@ export default class Signer extends React.Component {
   };
 
   handleSignIn = async () => {
+    // Send a POST request to the server
     const pro = await fetch("http://localhost:3001/user/signin", {
       method: "POST",
       headers: {
@@ -81,10 +99,11 @@ export default class Signer extends React.Component {
       }),
     });
     const res = await pro.json();
+    // If the response indicates an error, reset the password field and display an error message
     if (!res.success) {
       this.setState({
-        password: ''
-      })
+        password: "",
+      });
       return alert(res.errno);
     }
     localStorage.setItem("token", res.token);
@@ -92,6 +111,7 @@ export default class Signer extends React.Component {
       () => {
         return { login: true };
       },
+      // callback after set state
       () => {
         this.props.updateBasic();
       }

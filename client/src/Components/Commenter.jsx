@@ -1,16 +1,7 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
-import {
-  Card,
-  Button,
-  Figure,
-  CloseButton,
-  Form,
-  ButtonGroup,
-  InputGroup,
-} from "react-bootstrap";
-import Sample from "../Public/sample.jpg";
+import { Card, Button, Figure, Form, InputGroup } from "react-bootstrap";
 
+// render comment area for post page
 export default class Commenter extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -22,9 +13,11 @@ export default class Commenter extends React.PureComponent {
     };
   }
 
+  // loading and reload the page
   fetchCommentsDetail = async () => {
     const token = localStorage.getItem("token");
     const { postId } = this.props;
+    // firstly get post related info
     const pro = await fetch(`http://localhost:3001/post/get/${postId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -42,7 +35,9 @@ export default class Commenter extends React.PureComponent {
         },
       });
       const res = await pro.json();
+      // no further operation if no comments exists in case of error
       if (!res.comment) return false;
+      // fetch for comment poster's username...
       const data = await fetch(
         `http://localhost:3001/profile/basic/${res.comment.userId}`,
         {
@@ -56,6 +51,7 @@ export default class Commenter extends React.PureComponent {
       const { username, avatar } = info;
       res.comment.username = username;
       if (info.avatar) {
+        // fetch comment poster's avatar
         const fetchAva = await fetch(
           `http://localhost:3001/profile/getava/${avatar}`,
           {
@@ -70,6 +66,7 @@ export default class Commenter extends React.PureComponent {
       }
       bucket.push(res.comment);
     }
+    // set state and reload page
     this.setState({
       comments: bucket,
       loading: false,
@@ -80,8 +77,9 @@ export default class Commenter extends React.PureComponent {
     this.fetchCommentsDetail();
   };
 
+  // start writing comment, render input
   handleStartWriting = () => {
-    if(!localStorage.getItem('token')) return alert('You must login first')
+    if (!localStorage.getItem("token")) return alert("You must login first");
     this.setState({
       writing: true,
     });
@@ -94,6 +92,7 @@ export default class Commenter extends React.PureComponent {
     });
   };
 
+  // submit written comment
   handleSubmitComment = async () => {
     const token = localStorage.getItem("token");
     const pro = await fetch(`http://localhost:3001/comment/write`, {
@@ -124,12 +123,15 @@ export default class Commenter extends React.PureComponent {
           <>Loading...</>
         ) : (
           <>
+            {/* render fetched comments on by one */}
             {comments.map((comment, index) => {
+              // loading unix millis to readable format
               const date = new Date(comment.lastEdit);
               const lastEdit = `${date.getFullYear()}/${
                 date.getMonth() + 1
               }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
               let url;
+              // loading avatar buffer to blob
               if (comment.avatar) {
                 const blob = new Blob(
                   [new Uint8Array(comment.avatar.buffer.data)],
@@ -152,6 +154,7 @@ export default class Commenter extends React.PureComponent {
                       marginTop: 10,
                     }}
                   >
+                    {/* only render if avatar exists in case of error */}
                     {comment.avatar && (
                       <Figure.Image
                         src={url}
@@ -204,6 +207,7 @@ export default class Commenter extends React.PureComponent {
                 </Card>
               );
             })}
+            {/* if write commented unclicked render button, or render input */}
             {writing ? (
               <>
                 <InputGroup size="sm">

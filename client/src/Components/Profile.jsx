@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import {
   Card,
@@ -11,6 +10,7 @@ import {
   InputGroup,
 } from "react-bootstrap";
 
+// profile page after login
 export default class Profile extends React.Component {
   constructor(props) {
     super(props);
@@ -28,6 +28,7 @@ export default class Profile extends React.Component {
 
   fetchProfileDateil = async () => {
     const token = localStorage.getItem("token");
+    // Fetch user profile information from the backend
     const pro = await fetch("http://localhost:3001/profile/info", {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -35,6 +36,7 @@ export default class Profile extends React.Component {
       },
     });
     const res = await pro.json();
+    // Update component state with user profile data
     this.setState(
       () => {
         return {
@@ -45,6 +47,7 @@ export default class Profile extends React.Component {
         };
       },
       async () => {
+        // If user has an avatar, fetch it from the backend
         if (this.state.avatarId) {
           const pro = await fetch(
             `http://localhost:3001/profile/getava/${this.state.avatarId}`,
@@ -56,6 +59,7 @@ export default class Profile extends React.Component {
             }
           );
           const res = await pro.json();
+          // Update component state with user avatar data
           this.setState({
             avatar: res.avatar,
             loading: false,
@@ -87,6 +91,7 @@ export default class Profile extends React.Component {
     });
   };
 
+  // get image from input
   handleAvatar = (e) => {
     this.setState({
       newAvatar: e.target.files[0],
@@ -94,12 +99,14 @@ export default class Profile extends React.Component {
   };
 
   handleSave = async () => {
+    // Destructure the 'username' and 'bio' values from the component's state object
     const { username, bio } = this.state;
     const token = localStorage.getItem("token");
+    // Send a POST request to the server to update the user's profile data
     const pro = await fetch("http://localhost:3001/profile/update", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // Include the token in the 'Authorization' header
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -109,6 +116,7 @@ export default class Profile extends React.Component {
     });
     const res = await pro.json();
     if (res.success) alert("Modification Saved");
+    // Update the component's state to indicate that the user is no longer editing their profile
     this.setState({
       editing: false,
     });
@@ -117,24 +125,30 @@ export default class Profile extends React.Component {
   handleUploadAvatar = async () => {
     const { newAvatar } = this.state;
     const token = localStorage.getItem("token");
+    // Create a new FormData object and append the selected avatar file to it
     const fd = new FormData();
     fd.append("avatar", newAvatar);
+    // Send a POST request to the server to upload the new avatar file
     const postAvatar = await fetch("http://localhost:3001/profile/avatar", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // Include the token in the 'Authorization' header
       },
-      body: fd,
+      body: fd, // Use the FormData object as the request body
     });
     const resAvatar = await postAvatar.json();
+    // If the server indicates success, display a success message to the user
     if (resAvatar.success) alert("New avatar uploaded");
+    // Call the 'fetchProfileDateil' method to update the user's profile data with the new avatar
     this.fetchProfileDateil();
+    // Call the 'endEdit' method to exit the edit mode for the avatar upload section
     this.endEdit();
   };
 
   render() {
     const { loading, userId, username, bio, avatar, editing } = this.state;
     let url;
+    // load avatar buffer to blob
     if (!loading) {
       const blob = new Blob([new Uint8Array(avatar.buffer.data)], {
         type: avatar.mimeType,

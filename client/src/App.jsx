@@ -9,67 +9,82 @@ import Post from "./Components/Post";
 import Signer from "./Components/Signer";
 import Writer from "./Components/Writer";
 import Modifier from "./Components/Modifier";
-import { P404 } from "./Components/404"
+import { P404 } from "./Components/404";
 
 class App extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       signed: false,
       username: null,
       avatar: null,
-      bio: null
-    }
+      bio: null,
+    };
   }
 
-  loadBasic = async() => {
-    const token = localStorage.getItem("token")
-    const pro = await fetch('http://localhost:3001/profile/info', {
+  // Method to load the user's basic profile information from the server
+  loadBasic = async () => {
+    const token = localStorage.getItem("token");
+    const pro = await fetch("http://localhost:3001/profile/info", {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-    })
-    const res = await pro.json()
+    });
+    const res = await pro.json();
+    // Update the component's state with the loaded information
     this.setState({
       signed: true,
       username: res.username,
       avatar: res.avatar,
-      bio: res.bio
-    })
-  }
+      bio: res.bio,
+    });
+  };
 
+  // Method called when the component is mounted, which loads the user's basic profile information
   componentDidMount = () => {
-    this.loadBasic()
-  }
+    this.loadBasic();
+  };
 
+  // Method to update the user's basic profile information
   updateBasic = () => {
-    this.loadBasic()
-  }
+    this.loadBasic();
+  };
 
-  handleSignOut = async() => {
-    localStorage.removeItem("token")
+  // Method called when the user signs out, which clears the component's state and removes the token from local storage
+  handleSignOut = async () => {
+    localStorage.removeItem("token");
+    // Update the component's state to reflect that the user is no longer signed in
     this.setState({
       signed: false,
       username: null,
       avatar: null,
-      bio: null
-    })
-  }
+      bio: null,
+    });
+  };
 
   render() {
-    const { signed, username, avatar } = this.state
+    // Destructure relevant values from the component's state
+    const { signed, username, avatar } = this.state;
     return (
       <>
+        {/* Set up the React Router */}
         <Router>
+          {/* Render a navigation bar component with various props */}
           <RBNav
-          signed={signed} username={username} avatar={avatar}
-          handleSignOut={this.handleSignOut}
-          updateBasic={this.updateBasic}
+            signed={signed}
+            username={username}
+            avatar={avatar}
+            handleSignOut={this.handleSignOut}
+            updateBasic={this.updateBasic}
           />
+          {/* Define the routes and their corresponding components */}
           <Routes>
             <Route path="/" exact element={<Index />} />
-            <Route path="/sign" element={<Signer updateBasic={this.updateBasic} />} />
+            <Route
+              path="/sign"
+              element={<Signer updateBasic={this.updateBasic} />}
+            />
             <Route path="/profile" element={<Profile />} />
             <Route path="/post/add/:title" element={<Writer />} />
             <Route path="/post/:postid" element={<Post />} />

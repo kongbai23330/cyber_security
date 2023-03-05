@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import {
   Card,
@@ -7,7 +6,6 @@ import {
   CloseButton,
   Form,
   ButtonGroup,
-  Figure,
 } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import Snippet from "./Snippet";
@@ -16,6 +14,7 @@ import Commenter from "./Commenter";
 import Author from "./Author";
 import { Divider } from "./Divider";
 
+// overall post page rather complex :(
 export default class Post extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -44,6 +43,7 @@ export default class Post extends React.PureComponent {
 
   componentDidMount = async () => {
     const token = localStorage.getItem("token");
+    // If the token exists, fetch the user's profile information
     if (token) {
       const pro = await fetch("http://localhost:3001/profile/info", {
         headers: {
@@ -52,20 +52,25 @@ export default class Post extends React.PureComponent {
         },
       });
       const res = await pro.json();
+      // Set the component's state with the user's ID
       this.setState({
         userId: res.userId,
       });
     }
+    // Fetch the post details
     this.fetchPostDetail();
   };
 
+  // fetch all necessary info when load and reload
   fetchPostDetail = async () => {
+    // Set the postId state to the postId parsed from the URL
     this.setState(
       () => {
         return {
           postId: window.location.pathname.match(/\/post\/(\d+)/)[1],
         };
       },
+      // callback after postId set
       async () => {
         const { postId } = this.state;
         let url;
@@ -78,6 +83,7 @@ export default class Post extends React.PureComponent {
           },
         });
         const res = await pro.json();
+        // extract required post details from response
         const { title, userId, lastEdit, ups, downs } = res.post;
         const date = new Date(lastEdit);
         this.setState(
@@ -94,6 +100,8 @@ export default class Post extends React.PureComponent {
             };
           },
           async () => {
+            // load at callback after state set
+            // using a bucket storing all posts detail in case of error
             const bucket = [];
             for (let i of res.post.contents) {
               const token = localStorage.getItem("token");
@@ -109,6 +117,7 @@ export default class Post extends React.PureComponent {
               const res = await pro.json();
               bucket.push(res.content);
             }
+            // set the contents and loading state
             this.setState({
               contents: bucket,
               loading: false,
@@ -120,11 +129,14 @@ export default class Post extends React.PureComponent {
   };
 
   handleClick = async (e) => {
-    const { postId, userId, poster } = this.state;
-    const { name } = e.target;
+    const { postId, userId, poster } = this.state; // Get relevant state variables
+    const { name } = e.target; // Get the name of the clicked button
     const token = localStorage.getItem("token");
-    if (userId !== poster && userId !== 0 && name !== "back")
+    // Check if the user has permission to perform the action
+    if (userId !== poster && userId !== 0 && name !== "back") {
       return alert("You have no permission to do so");
+    }
+    // If the "remove" button is clicked, send a DELETE request to the server
     if (name === "remove") {
       const pro = await fetch(`http://localhost:3001/post/delete/${postId}`, {
         method: "DELETE",
@@ -137,19 +149,24 @@ export default class Post extends React.PureComponent {
       if (res.success) alert("Post deleted");
       else return alert(res.errno);
     }
+    // Set the state variable with the name of the clicked button to true
     this.setState({
       [name]: true,
     });
   };
 
   handleVote = async (e) => {
+    // If the user is not logged in, show an alert message and return
     if (!localStorage.getItem("token")) return alert("You must login first");
     const { name } = e.target;
+    // Set the value of the vote (true for upvote, false for downvote)
     let vote;
     if (name === "up") vote = true;
     else vote = false;
+    // Get the post ID, number of upvotes, and number of downvotes from the state
     const { postId, ups, downs } = this.state;
     const token = localStorage.getItem("token");
+    // Send a POST request to the server to submit the vote
     const pro = await fetch("http://localhost:3001/post/vote", {
       method: "POST",
       headers: {
@@ -163,11 +180,13 @@ export default class Post extends React.PureComponent {
     });
     const res = await pro.json();
     if (!res.success) return alert("Something went wrong");
+    // If the vote was an upvote, update the state to reflect the new number of upvotes and the fact that the user has upvoted
     if (vote)
       this.setState({
         ups: ups + 1,
         vote: vote,
       });
+    // If the vote was a downvote, update the state to reflect the new number of downvotes and the fact that the user has downvoted
     else
       this.setState({
         downs: downs + 1,
@@ -177,12 +196,15 @@ export default class Post extends React.PureComponent {
 
   handleNewRow = (e) => {
     const { name } = e.target;
+    // check if user is logged in
     if (!localStorage.getItem("token")) return alert("You must login first");
+    // if name is 'new-segment', set state to add new row with language set to 'raw'
     if (name === "new-segment")
       this.setState({
         newRow: false,
         language: "raw",
       });
+    // else set state to add new row with language set to current state value
     else
       this.setState({
         newRow: true,
@@ -206,7 +228,8 @@ export default class Post extends React.PureComponent {
   handleSubmitNewContent = async () => {
     const { postId, newContent, language } = this.state;
     const token = localStorage.getItem("token");
-    const pro = await fetch(`http://127.0.0.1:3001/post/push`, {
+    // Send a POST request to the server to add the new content
+    const pro = await fetch(`http://localhost:3001/post/push`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -219,6 +242,7 @@ export default class Post extends React.PureComponent {
       }),
     });
     const res = await pro.json();
+    // If the content was successfully added, update the state and fetch the post details again
     if (res.success) {
       alert("Post content updated");
       this.setState({
@@ -227,7 +251,10 @@ export default class Post extends React.PureComponent {
         newRow: null,
       });
       this.fetchPostDetail();
-    } else alert("Something went wrong");
+    } else {
+      // If there was an error, display an error message
+      alert("Something went wrong");
+    }
   };
 
   render() {
@@ -250,6 +277,7 @@ export default class Post extends React.PureComponent {
     } = this.state;
     return (
       <>
+        {/* redirect to other pages */}
         {back && <Navigate to="/" />}
         {modify && <Navigate to={`/post/modify/${postId}`} />}
         {remove && <Navigate to="/" />}
@@ -263,6 +291,7 @@ export default class Post extends React.PureComponent {
                       <CloseButton name="back" onClick={this.handleClick} />
                     </ButtonGroup>
                   </Nav.Item>
+                  {/* decode from uri form, from %20 to whitespace */}
                   <Nav.Item className="ms-auto post-title">
                     {decodeURI(title)}
                   </Nav.Item>
@@ -274,10 +303,12 @@ export default class Post extends React.PureComponent {
                 </Nav>
               </Card.Header>
               <Card.Body>
+                {/* render author bar after done loading */}
                 {!loading && <Author authorId={poster} />}
                 <Divider />
                 <div className="post-rows">
                   {contents.map((content) => {
+                    // render segment/snippet respectively for languages
                     if (content.language === "raw")
                       return (
                         <Segment
@@ -296,6 +327,7 @@ export default class Post extends React.PureComponent {
                   })}
                 </div>
                 <div className="post-newrow">
+                  {/* render different input respectively when click different button */}
                   {newRow === null && (
                     <ButtonGroup size="sm">
                       <Button
@@ -416,12 +448,14 @@ export default class Post extends React.PureComponent {
                     </div>
                   )}
                   <Divider />
+                  {/* render comment area after loaded */}
                   {!loading && <Commenter postId={postId} />}
                 </div>
               </Card.Body>
               <Card.Footer></Card.Footer>
             </Card>
           </div>
+          {/* float bar for votes, modify and delete */}
           <div className="float-post">
             <ButtonGroup>
               {vote === null && (
@@ -439,7 +473,7 @@ export default class Post extends React.PureComponent {
                       fill="currentColor"
                       className="bi bi-hand-thumbs-up-fill"
                       viewBox="0 0 16 16"
-                      style={{ pointerEvents: 'none' }}
+                      style={{ pointerEvents: "none" }}
                     >
                       <path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a9.84 9.84 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733.058.119.103.242.138.363.077.27.113.567.113.856 0 .289-.036.586-.113.856-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.163 3.163 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.82 4.82 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.639.199-.575.356-1.539.428-2.59z" />
                     </svg>{" "}
@@ -458,7 +492,7 @@ export default class Post extends React.PureComponent {
                       fill="currentColor"
                       className="bi bi-hand-thumbs-down-fill"
                       viewBox="0 0 16 16"
-                      style={{ pointerEvents: 'none' }}
+                      style={{ pointerEvents: "none" }}
                     >
                       <path d="M6.956 14.534c.065.936.952 1.659 1.908 1.42l.261-.065a1.378 1.378 0 0 0 1.012-.965c.22-.816.533-2.512.062-4.51.136.02.285.037.443.051.713.065 1.669.071 2.516-.211.518-.173.994-.68 1.2-1.272a1.896 1.896 0 0 0-.234-1.734c.058-.118.103-.242.138-.362.077-.27.113-.568.113-.856 0-.29-.036-.586-.113-.857a2.094 2.094 0 0 0-.16-.403c.169-.387.107-.82-.003-1.149a3.162 3.162 0 0 0-.488-.9c.054-.153.076-.313.076-.465a1.86 1.86 0 0 0-.253-.912C13.1.757 12.437.28 11.5.28H8c-.605 0-1.07.08-1.466.217a4.823 4.823 0 0 0-.97.485l-.048.029c-.504.308-.999.61-2.068.723C2.682 1.815 2 2.434 2 3.279v4c0 .851.685 1.433 1.357 1.616.849.232 1.574.787 2.132 1.41.56.626.914 1.28 1.039 1.638.199.575.356 1.54.428 2.591z" />
                     </svg>{" "}
@@ -540,7 +574,7 @@ export default class Post extends React.PureComponent {
                   fill="currentColor"
                   className="bi bi-pencil-square"
                   viewBox="0 0 16 16"
-                  style={{ pointerEvents: 'none' }}
+                  style={{ pointerEvents: "none" }}
                 >
                   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                   <path
@@ -561,7 +595,7 @@ export default class Post extends React.PureComponent {
                   fill="currentColor"
                   className="bi bi-trash"
                   viewBox="0 0 16 16"
-                  style={{ pointerEvents: 'none' }}
+                  style={{ pointerEvents: "none" }}
                 >
                   <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
                   <path

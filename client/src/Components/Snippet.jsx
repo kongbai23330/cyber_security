@@ -1,13 +1,14 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import { Badge } from "react-bootstrap";
 import hljs from "highlight.js";
 import "highlight.js/styles/default.css";
 
+// config for highlight.js
 hljs.configure({
   ignoreUnescapedHTML: true,
 });
 
+// render code snippents
 export default class Snippet extends React.Component {
   componentDidMount() {
     this.highlightCallBack();
@@ -18,6 +19,7 @@ export default class Snippet extends React.Component {
   }
 
   highlightCallBack = () => {
+    // gets document elements to apply effect
     document.querySelectorAll("pre").forEach((element) => {
       try {
         hljs.highlightElement(element);
@@ -28,8 +30,8 @@ export default class Snippet extends React.Component {
   };
 
   render() {
-    const { language, storage } = this.props
-    const Lang = language.replace(/^\w/, c => c.toUpperCase())
+    const { language, storage } = this.props;
+    const Lang = language.replace(/^\w/, (c) => c.toUpperCase());
     return (
       <div className="snippet-panel">
         <div style={{ height: 10 }} />
@@ -38,9 +40,7 @@ export default class Snippet extends React.Component {
         </div>
         <div className="snippet-code">
           <pre className={language} style={{ margin: 0 }}>
-            <code>
-              {storage}
-            </code>
+            <code>{storage}</code>
           </pre>
         </div>
         <div style={{ height: 15 }} />

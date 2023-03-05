@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import {
   Card,
@@ -11,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 
+// component allow user modify posts
 export default class Modify extends React.Component {
   constructor(props) {
     super(props);
@@ -24,22 +24,26 @@ export default class Modify extends React.Component {
   }
 
   fetchPostDetail = async () => {
+    // Update the component's state with the post ID extracted from the URL
     this.setState(
       () => {
         return {
           postId: window.location.pathname.match(/\/modify\/(\d+)/)[1],
         };
       },
+      // callback after state set
       async () => {
         const { postId } = this.state;
         const token = localStorage.getItem("token");
-        const pro = await fetch(`http://127.0.0.1:3001/post/get/${postId}`, {
+        // Fetch the post details from the server using the post ID and token
+        const pro = await fetch(`http://localhost:3001/post/get/${postId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
         const res = await pro.json();
+        // Extract the post title from the response and update the component's state
         const { title } = res.post;
         this.setState(
           () => {
@@ -47,12 +51,15 @@ export default class Modify extends React.Component {
               title: title,
             };
           },
+          // callback after set state, fetch the post contents by id
           async () => {
+            // using a bucket storing fetched content
             const bucket = [];
             for (let i of res.post.contents) {
               const token = localStorage.getItem("token");
+              // Fetch the content from the server using its ID and token
               const pro = await fetch(
-                `http://127.0.0.1:3001/content/get/${i}`,
+                `http://localhost:3001/content/get/${i}`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -63,6 +70,8 @@ export default class Modify extends React.Component {
               const res = await pro.json();
               bucket.push(res.content);
             }
+            // set state after all contents fetched in order
+            // in case of incorrect order / missing of fetched contents
             this.setState({
               contents: bucket,
             });
@@ -74,11 +83,13 @@ export default class Modify extends React.Component {
 
   componentDidMount() {
     const date = new Date();
+    // format unix timestamp to readable form
     this.setState({
       now: `${date.getFullYear()}/${
         date.getMonth() + 1
       }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`,
     });
+    // load all posts when page load
     this.fetchPostDetail();
   }
 
@@ -88,6 +99,7 @@ export default class Modify extends React.Component {
     });
   };
 
+  // control all posts' input binding
   contentScheduler = (index, updated) => {
     const contents = [...this.state.contents];
     contents[index].storage = updated;
@@ -96,6 +108,7 @@ export default class Modify extends React.Component {
     });
   };
 
+  // binding language input for all code snippet
   languageScheduler = (index, updated) => {
     const contents = [...this.state.contents];
     contents[index].language = updated;
@@ -104,6 +117,7 @@ export default class Modify extends React.Component {
     });
   };
 
+  // handling removing
   contentRemover = (index) => {
     const contents = [...this.state.contents];
     contents.splice(index, 1);
@@ -112,11 +126,13 @@ export default class Modify extends React.Component {
     });
   };
 
+  // submit updated post to server
   handlePostUpdate = async () => {
     const { contents, postId } = this.state;
     const token = localStorage.getItem("token");
+    // Create an array of content IDs
     const contentId = contents.map((content) => content.contentId);
-    console.log(contentId, contents);
+    // Send a POST request to the server to update the post
     const pro = await fetch("http://localhost:3001/post/update", {
       method: "POST",
       headers: {
@@ -130,14 +146,20 @@ export default class Modify extends React.Component {
       }),
     });
     const res = await pro.json();
-    if (res.success) alert("Successfully updated");
-    else alert(res.errno);
+    // If the response indicates success, show an alert
+    if (res.success) {
+      alert("Successfully updated");
+    } else {
+      // If the response indicates an error, show an alert with the error message
+      alert(res.errno);
+    }
   };
 
   render() {
     const { back, postId, now, title, contents } = this.state;
     return (
       <>
+        {/* redirct to other pages */}
         {back && <Navigate to={`/post/${postId}`} />}
         <div className="main-panel">
           <Card>
@@ -158,8 +180,10 @@ export default class Modify extends React.Component {
             </Card.Header>
             <Card.Body>
               {contents.map((content, index) => {
-                if(index === 0) return (
-                  <div key={index}>
+                if (index === 0)
+                  return (
+                    // first content can not be deleted
+                    <div key={index}>
                       <Form.Control
                         as="textarea"
                         rows={1}
@@ -171,7 +195,8 @@ export default class Modify extends React.Component {
                         }
                       />
                     </div>
-                )
+                  );
+                // repectively render for raw segment and code snippet
                 if (content.language === "raw")
                   return (
                     <div key={index}>

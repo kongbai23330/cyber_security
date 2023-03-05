@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// config for jwt and exempt paths
 app.use(
   "/",
   expressJWT
@@ -163,6 +164,7 @@ app.post("/user/signin", (req, res) => {
   });
 });
 
+// save user avatar to db
 app.post("/profile/avatar", upload.single("avatar"), (req, res) => {
   const { userId } = req.auth;
   const { mimetype, buffer } = req.file;
@@ -195,6 +197,7 @@ app.post("/profile/avatar", upload.single("avatar"), (req, res) => {
   });
 });
 
+// get avatar from db send to user as buffer
 app.get("/profile/getava/:avatarId", (req, res) => {
   const { avatarId } = req.params;
   Avatar.findOne({ avatarId: avatarId }, (err, avatar) => {

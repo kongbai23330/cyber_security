@@ -1,41 +1,44 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
-import { Card, Button, Form, InputGroup, Row, Col } from "react-bootstrap";
+import { Card } from "react-bootstrap";
 
+// component render posts portrait at index page
 export default class Protrait extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       title: null,
-      firstContent: null
-    }
+      firstContent: null,
+    };
   }
 
-  componentDidMount = async() => {
-    const { postId } = this.props
-    const token = localStorage.getItem("token")
-    const pro = await fetch(`http://127.0.0.1:3001/post/get/${postId}`, {
+  componentDidMount = async () => {
+    // Destructure postId from props
+    const { postId } = this.props;
+    const token = localStorage.getItem("token");
+    // Send a GET request to the server to get the post with the given ID
+    const pro = await fetch(`http://localhost:3001/post/get/${postId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-      }
-    })
-    const res = await pro.json()
+      },
+    });
+    const res = await pro.json();
+    // Update the component state with the post title and first content
     this.setState({
       title: res.post.title,
-      firstContent: res.firstContent
-    })
-  }
+      firstContent: res.firstContent,
+    });
+  };
 
   handleJump = () => {
-    this.props.jump(this.props.postId)
-  }
+    this.props.jump(this.props.postId);
+  };
 
   render() {
-    const { title, firstContent } = this.state
-    const { postId } = this.props
+    const { title, firstContent } = this.state;
+    const { postId } = this.props;
     return (
-      <div className="portrait-panel" id={postId} onClick={this.handleJump} >
+      <div className="portrait-panel" id={postId} onClick={this.handleJump}>
         <Card>
           <Card.Header
             className="portrait-header"

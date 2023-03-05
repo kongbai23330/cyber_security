@@ -20,15 +20,17 @@ export default class Writer extends React.Component {
       now: "",
     };
   }
-
   componentDidMount() {
+    // Get the title from the URL
     const title = window.location.pathname.match(/\/add\/(.+)/i)[1];
+    // Get the current date and time
     const date = new Date();
+    const formattedDate = `${date.getFullYear()}/${
+      date.getMonth() + 1
+    }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
     this.setState({
       title: title,
-      now: `${date.getFullYear()}/${
-        date.getMonth() + 1
-      }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`,
+      now: formattedDate,
     });
   }
 
@@ -47,9 +49,11 @@ export default class Writer extends React.Component {
 
   handleNewPost = async () => {
     const { title, content } = this.state;
+    // Check if the post has at least one chapter
     if (content.replace(/\s/g, "").length === 0)
       return alert("A post must have something as first chapter");
     const token = localStorage.getItem("token");
+    // fetch to create new post
     const pro = await fetch(`http://127.0.0.1:3001/post/create`, {
       method: "POST",
       headers: {
@@ -63,6 +67,7 @@ export default class Writer extends React.Component {
     });
     const res = await pro.json();
     if (res.success) alert("Post Created");
+    // Set the state to go back to the previous page
     this.setState({
       back: true,
     });

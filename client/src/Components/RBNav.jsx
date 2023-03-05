@@ -1,13 +1,8 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import { Navbar, Button, Container, Nav, ButtonGroup } from "react-bootstrap";
 
+// render navbar, rb is for react native
 export default class RBNav extends React.Component {
-  // constructor(props) {
-  //   super(props);
-  //   this.state = {};
-  // }
-
   handleSignOut = () => {
     this.props.handleSignOut();
   };
