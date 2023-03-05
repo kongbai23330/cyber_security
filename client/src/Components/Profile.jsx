@@ -8,6 +8,7 @@ import {
   ButtonGroup,
   Form,
   InputGroup,
+  Nav,
 } from "react-bootstrap";
 
 // profile page after login
@@ -155,10 +156,24 @@ export default class Profile extends React.Component {
       });
       url = URL.createObjectURL(blob);
     }
+    const date = new Date(userId);
     return (
       <div className="main-panel">
         <Card>
-          <Card.Header>Profile</Card.Header>
+          <Card.Header>
+            <Nav>
+              <Nav.Item>Profile</Nav.Item>
+              <Nav.Item className="ms-auto post-title"></Nav.Item>
+              <Nav.Item className="ms-auto post-timestamp">
+                {"Register Date:\n"}
+                <br />
+                {/* transfer unix timestamp to readable form */}
+                {`${date.getFullYear()}/${
+                  date.getMonth() + 1
+                }/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`}
+              </Nav.Item>
+            </Nav>
+          </Card.Header>
           <Card.Body>
             <Row>
               <Col xs={3}>
