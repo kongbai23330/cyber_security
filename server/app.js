@@ -70,6 +70,26 @@ mongoose.connect("mongodb://localhost:27017/testdb", (err, client) => {
           });
         });
       });
+      let now = Date.now()
+      new Content({
+        contentId: now,
+        language: "raw",
+        storage: "This is content of an example post",
+      }).save((err) => {
+        if (err) throw err;
+        new Post({
+          postId: now,
+          userId: 0,
+          title: "Example Post",
+          contents: [now],
+          ups: [],
+          downs: [],
+          lastEdit: now,
+        }).save((err) => {
+          if (err) throw err;
+        });
+      });
+
     }
   });
 });
@@ -451,6 +471,14 @@ app.get("/post/get/:postId", (req, res) => {
   let userId, vote;
   if (req.auth) userId = req.auth.userId;
   const { postId } = req.params;
+  console.log("postId:", postId);
+  if (isNaN(postId)) {
+    return res.status(400).send({
+      success: false,
+      errno: "IDINVALID",
+    });
+  }
+
   Post.findOne({ postId: postId }, (err, post) => {
     if (err) throw err;
     if (!post)

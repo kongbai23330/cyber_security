@@ -80,7 +80,7 @@ class App extends React.Component {
           />
           {/* Define the routes and their corresponding components */}
           <Routes>
-            <Route path="/" exact element={<Index />} />
+            
             <Route
               path="/sign"
               element={<Signer updateBasic={this.updateBasic} />}
@@ -90,6 +90,7 @@ class App extends React.Component {
             <Route path="/post/:postid" element={<Post />} />
             <Route path="/post/modify/:postid" element={<Modifier />} />
             <Route path="*" element={<P404 />} />
+            <Route path="/" exact element={<Index />} />
           </Routes>
         </Router>
       </>
