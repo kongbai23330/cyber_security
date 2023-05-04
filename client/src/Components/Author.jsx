@@ -16,7 +16,7 @@ export default class Author extends React.Component {
     const token = localStorage.getItem("token");
     // Make a GET request to fetch the basic profile information of the author using authorId passed as props
     const pro = await fetch(
-      `http://localhost:3001/profile/basic/${this.props.authorId}`,
+      `https://localhost:3001/profile/basic/${this.props.authorId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -32,7 +32,7 @@ export default class Author extends React.Component {
     // If the author has an avatar, make another GET request to fetch the avatar image
     if (res.avatar) {
       const fetchAva = await fetch(
-        `http://localhost:3001/profile/getava/${res.avatar}`,
+        `https://localhost:3001/profile/getava/${res.avatar}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

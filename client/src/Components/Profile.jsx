@@ -30,7 +30,7 @@ export default class Profile extends React.Component {
   fetchProfileDateil = async () => {
     const token = localStorage.getItem("token");
     // Fetch user profile information from the backend
-    const pro = await fetch("http://localhost:3001/profile/info", {
+    const pro = await fetch("https://localhost:3001/profile/info", {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -51,7 +51,7 @@ export default class Profile extends React.Component {
         // If user has an avatar, fetch it from the backend
         if (this.state.avatarId) {
           const pro = await fetch(
-            `http://localhost:3001/profile/getava/${this.state.avatarId}`,
+            `https://localhost:3001/profile/getava/${this.state.avatarId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -104,7 +104,7 @@ export default class Profile extends React.Component {
     const { username, bio } = this.state;
     const token = localStorage.getItem("token");
     // Send a POST request to the server to update the user's profile data
-    const pro = await fetch("http://localhost:3001/profile/update", {
+    const pro = await fetch("https://localhost:3001/profile/update", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the 'Authorization' header
@@ -130,7 +130,7 @@ export default class Profile extends React.Component {
     const fd = new FormData();
     fd.append("avatar", newAvatar);
     // Send a POST request to the server to upload the new avatar file
-    const postAvatar = await fetch("http://localhost:3001/profile/avatar", {
+    const postAvatar = await fetch("https://localhost:3001/profile/avatar", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the 'Authorization' header

@@ -37,7 +37,7 @@ export default class Signer extends React.Component {
       return alert("Password not strong enough");
     }
     // Send a GET request to the server to check if the entered username already exists
-    const pro = await fetch("http://localhost:3001/user/validate/" + username);
+    const pro = await fetch("https://localhost:3001/user/validate/" + username);
     const res = await pro.json();
     // If the server indicates that the username already exists, display an error message and return
     if (res.exists) return alert("Username already exists");
@@ -65,7 +65,7 @@ export default class Signer extends React.Component {
       return alert("Repeated password not match");
     }
     // Send a POST request to the server to create a new user account with the entered information
-    const pro = await fetch("http://localhost:3001/user/signup/", {
+    const pro = await fetch("https://localhost:3001/user/signup/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -88,7 +88,7 @@ export default class Signer extends React.Component {
 
   handleSignIn = async () => {
     // Send a POST request to the server
-    const pro = await fetch("http://localhost:3001/user/signin", {
+    const pro = await fetch("https://localhost:3001/user/signin", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

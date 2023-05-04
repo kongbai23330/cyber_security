@@ -36,7 +36,7 @@ export default class Modify extends React.Component {
         const { postId } = this.state;
         const token = localStorage.getItem("token");
         // Fetch the post details from the server using the post ID and token
-        const pro = await fetch(`http://localhost:3001/post/get/${postId}`, {
+        const pro = await fetch(`https://localhost:3001/post/get/${postId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -59,7 +59,7 @@ export default class Modify extends React.Component {
               const token = localStorage.getItem("token");
               // Fetch the content from the server using its ID and token
               const pro = await fetch(
-                `http://localhost:3001/content/get/${i}`,
+                `https://localhost:3001/content/get/${i}`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -133,7 +133,7 @@ export default class Modify extends React.Component {
     // Create an array of content IDs
     const contentId = contents.map((content) => content.contentId);
     // Send a POST request to the server to update the post
-    const pro = await fetch("http://localhost:3001/post/update", {
+    const pro = await fetch("https://localhost:3001/post/update", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

@@ -13,7 +13,7 @@ import Segment from "./Segment";
 import Commenter from "./Commenter";
 import Author from "./Author";
 import { Divider } from "./Divider";
-
+import "./Post.css"
 // overall post page rather complex :(
 export default class Post extends React.PureComponent {
   constructor(props) {
@@ -45,7 +45,7 @@ export default class Post extends React.PureComponent {
     const token = localStorage.getItem("token");
     // If the token exists, fetch the user's profile information
     if (token) {
-      const pro = await fetch("http://localhost:3001/profile/info", {
+      const pro = await fetch("https://localhost:3001/profile/info", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -75,8 +75,8 @@ export default class Post extends React.PureComponent {
         const { postId } = this.state;
         let url;
         if (this.state.userId)
-          url = `http://localhost:3001/post/get/${postId}/${this.state.userId}`;
-        else url = `http://localhost:3001/post/get/${postId}/1`;
+          url = `https://localhost:3001/post/get/${postId}/${this.state.userId}`;
+        else url = `https://localhost:3001/post/get/${postId}/1`;
         const pro = await fetch(url, {
           headers: {
             "Content-Type": "application/json",
@@ -106,7 +106,7 @@ export default class Post extends React.PureComponent {
             for (let i of res.post.contents) {
               const token = localStorage.getItem("token");
               const pro = await fetch(
-                `http://localhost:3001/content/get/${i}`,
+                `https://localhost:3001/content/get/${i}`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -138,7 +138,7 @@ export default class Post extends React.PureComponent {
     }
     // If the "remove" button is clicked, send a DELETE request to the server
     if (name === "remove") {
-      const pro = await fetch(`http://localhost:3001/post/delete/${postId}`, {
+      const pro = await fetch(`https://localhost:3001/post/delete/${postId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -167,7 +167,7 @@ export default class Post extends React.PureComponent {
     const { postId, ups, downs } = this.state;
     const token = localStorage.getItem("token");
     // Send a POST request to the server to submit the vote
-    const pro = await fetch("http://localhost:3001/post/vote", {
+    const pro = await fetch("https://localhost:3001/post/vote", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -229,7 +229,7 @@ export default class Post extends React.PureComponent {
     const { postId, newContent, language } = this.state;
     const token = localStorage.getItem("token");
     // Send a POST request to the server to add the new content
-    const pro = await fetch(`http://localhost:3001/post/push`, {
+    const pro = await fetch(`https://localhost:3001/post/push`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -287,8 +287,16 @@ export default class Post extends React.PureComponent {
               <Card.Header>
                 <Nav>
                   <Nav.Item>
-                    <ButtonGroup size="sm" id="btn-back">
-                      <CloseButton name="back" onClick={this.handleClick} />
+                    <ButtonGroup
+                      size="sm"
+                      id="btn-back"
+                      style={{ backgroundColor: "#deeff5" }}
+                    >
+                      <CloseButton
+                        name="back"
+                        onClick={this.handleClick}
+                        style={{ backgroundColor: "#deeff5" }}
+                      />
                     </ButtonGroup>
                   </Nav.Item>
                   {/* decode from uri form, from %20 to whitespace */}
@@ -302,7 +310,7 @@ export default class Post extends React.PureComponent {
                   </Nav.Item>
                 </Nav>
               </Card.Header>
-              <Card.Body>
+              <Card.Body style={{ backgroundColor: "#deeff5" }}>
                 {/* render author bar after done loading */}
                 {!loading && <Author authorId={poster} />}
                 <Divider />

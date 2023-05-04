@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Button, Form, InputGroup, ButtonGroup } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import Protrait from "./Portrait";
-
+import "./Index.css"
 // index page of the app
 export default class Index extends React.Component {
   constructor(props) {
@@ -19,7 +19,7 @@ export default class Index extends React.Component {
   // fetch for existing posts
   componentDidMount = async () => {
     const token = localStorage.getItem("token");
-    const pro = await fetch("http://localhost:3001/post/last", {
+    const pro = await fetch("https://localhost:3001/post/last", {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -48,9 +48,9 @@ export default class Index extends React.Component {
     let url,
       search = title.replace(/\s/g, "");
     // if input is empty or only have white space reload all posts
-    if (!search) url = "http://localhost:3001/post/last";
+    if (!search) url = "https://localhost:3001/post/last";
     // otherwise fetch for matched posts
-    else url = `http://localhost:3001/post/query/${search}`;
+    else url = `https://localhost:3001/post/query/${search}`;
     const pro = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -118,12 +118,14 @@ export default class Index extends React.Component {
                     value={title}
                     onChange={this.searchOnChange}
                     autoComplete="off"
+                    className="custom-input" // Add custom input class
                   ></Form.Control>
                   <Button
                     id="search"
-                    variant="outline-primary"
+                    className="primary-color custom-btn" // Add custom button class and primary color
                     onClick={this.searchOnClick}
                   >
+                    
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
@@ -138,6 +140,7 @@ export default class Index extends React.Component {
                   <Button
                     variant="outline-primary"
                     id="newpost"
+                    className="secondary-color custom-btn" // Add custom button class and secondary color
                     onClick={this.handleAdd}
                   >
                     <svg
@@ -154,7 +157,7 @@ export default class Index extends React.Component {
                   </Button>
                 </InputGroup>
               </Card.Header>
-              <Card.Body>
+              <Card.Body style={{ backgroundColor: "#c4e7f5" }}>
                 {/* if no post exists */}
                 {posts.length === 0 ? (
                   <p id="no-res">No matched result</p>
@@ -177,6 +180,7 @@ export default class Index extends React.Component {
               <Card.Footer className="text-center">
                 {/* pager */}
                 <ButtonGroup size="sm">
+                  
                   <Button
                     id="prev"
                     name="prev"

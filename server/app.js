@@ -1,6 +1,10 @@
 "use strict";
+const fs = require('fs');
+const https = require('https');
 var express = require("express");
 var path = require("path");
+const key = fs.readFileSync('key.pem');
+const cert = fs.readFileSync('cert.pem');
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const { default: mongoose } = require("mongoose");
@@ -21,6 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+const httpsServer = https.createServer({ key, cert }, app);
 // config for jwt and exempt paths
 app.use(
   "/",

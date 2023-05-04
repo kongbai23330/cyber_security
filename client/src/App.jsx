@@ -25,7 +25,7 @@ class App extends React.Component {
   // Method to load the user's basic profile information from the server
   loadBasic = async () => {
     const token = localStorage.getItem("token");
-    const pro = await fetch("http://localhost:3001/profile/info", {
+    const pro = await fetch("https://localhost:3001/profile/info", {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",

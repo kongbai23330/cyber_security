@@ -95,7 +95,7 @@ export default class Commenter extends React.PureComponent {
   // submit written comment
   handleSubmitComment = async () => {
     const token = localStorage.getItem("token");
-    const pro = await fetch(`http://localhost:3001/comment/write`, {
+    const pro = await fetch(`https://localhost:3001/comment/write`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

@@ -20,13 +20,18 @@ export default class RBNav extends React.Component {
                 <ButtonGroup size="sm">
                   {signed ? (
                     <>
-                      <Button variant="outline-primary" href="/profile">
+                      <Button
+                        variant="outline-primary"
+                        href="/profile"
+                        style={{ backgroundColor: "#deeff5" }}
+                      >
                         {username}
                       </Button>
                       <Button
                         id="signout"
                         variant="outline-primary"
                         onClick={this.handleSignOut}
+                        style={{ backgroundColor: "#deeff5" }}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +53,11 @@ export default class RBNav extends React.Component {
                       </Button>
                     </>
                   ) : (
-                    <Button variant="outline-primary" href="/sign">
+                    <Button
+                      variant="outline-primary"
+                      href="/sign"
+                      style={{ backgroundColor: "#deeff5" }}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
@@ -71,7 +80,8 @@ export default class RBNav extends React.Component {
                   <Button
                     variant="outline-primary"
                     target="_blank"
-                    href="https://github.com/hj5230/AWA_Project-Heapoverflow/tree/main"
+                    href="https://github.com/0lzjReSh0/cyber_security.git"
+                    style={{ backgroundColor: "#deeff5" }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

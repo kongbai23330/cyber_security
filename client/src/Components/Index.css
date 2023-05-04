@@ -1,0 +1,31 @@
+/* Custom colors */
+.primary-color {
+    background-color: #8ac2d8;
+
+    color: white;
+}
+
+.secondary-color {
+    
+    background-color: #8ac2d8;
+        
+
+    color: white;
+}
+
+
+.custom-btn {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+
+.custom-input {
+    border: 1px solid #8ac2d8;
+}
+
+
+#no-res {
+    color: #8ac2d8;
+    font-weight: bold;
+}

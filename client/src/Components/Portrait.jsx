@@ -16,7 +16,7 @@ export default class Protrait extends React.Component {
     const { postId } = this.props;
     const token = localStorage.getItem("token");
     // Send a GET request to the server to get the post with the given ID
-    const pro = await fetch(`http://localhost:3001/post/get/${postId}`, {
+    const pro = await fetch(`https://localhost:3001/post/get/${postId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
