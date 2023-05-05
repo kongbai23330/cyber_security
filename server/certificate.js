@@ -10,16 +10,16 @@ cert.validity.notAfter = new Date();
 cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
 const attrs = [{
     name: 'commonName',
-    value: 'example.com'
+    value: 'test_project.com'
 }, {
     name: 'countryName',
-    value: 'US'
+    value: 'FIN'
 }, {
     shortName: 'ST',
-    value: 'California'
+    value: 'Paiathaime'
 }, {
     name: 'localityName',
-    value: 'San Francisco'
+    value: 'Lahti'
 }, {
     name: 'organizationName',
     value: 'Test'
@@ -59,7 +59,7 @@ cert.setExtensions([{
     name: 'subjectAltName',
     altNames: [{
         type: 6, // URI
-        value: 'http://example.com/webid#me'
+        value: 'http://test_project.com/webid#me'
     }, {
         type: 7, // IP
         ip: '127.0.0.1'
